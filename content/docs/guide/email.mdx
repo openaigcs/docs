@@ -1,0 +1,81 @@
+---
+title: Email & Notifications
+description: Email configuration and notification system
+---
+
+## Overview
+
+AIGCS uses SMTP for email notifications. Email is optional — the system works without it.
+
+## SMTP Configuration
+
+Configure in **Settings → SMTP** in the admin panel:
+
+| Field | Description |
+|-------|-------------|
+| Host | SMTP server hostname |
+| Port | SMTP port (default: 587) |
+| User | SMTP username or full email |
+| Password | SMTP password (encrypted at rest via AES-256-GCM) |
+| From Email | Sender email address |
+| From Name | Sender display name |
+
+### Environment Variables
+
+```bash
+SMTP_HOST=smtp.example.com
+SMTP_PORT=587
+SMTP_USER=noreply@example.com
+SMTP_PASS=your-password
+```
+
+### Testing
+
+Click **Send Test Email** in the admin panel to verify your SMTP configuration.
+
+## Email Templates
+
+AIGCS includes 6 built-in Handlebars email templates:
+
+| Template | Trigger |
+|----------|---------|
+| `welcome` | New user registration |
+| `comment-generated` | AI comments generated for a page |
+| `new-comment` | Visitor submits a comment |
+| `reply-notification` | Reply to a visitor's comment |
+| `delete-code` | Verification code for comment deletion |
+| `rss-import` | RSS import completion report |
+
+### Customizing Templates
+
+Templates use Handlebars syntax and can be customized:
+
+```html
+<h2>New AI Comments Generated</h2>
+<p>Page: {{pageTitle}}</p>
+<p>URL: {{pageUrl}}</p>
+<p>Comments generated: {{commentCount}}</p>
+```
+
+Available context variables vary by template.
+
+## Notification Events
+
+| Event | Delivery | Description |
+|-------|----------|-------------|
+| Comments Generated | Email + Webhook | AI comments created for a page |
+| New Visitor Comment | Email | Visitor submits a comment |
+| Reply Received | Email | Reply to visitor's comment |
+| RSS Import Complete | Webhook | RSS batch import finished |
+
+## Unsubscribe System
+
+Each notification email includes an unsubscribe link.
+
+```
+GET /api/unsubscribe?email=user@example.com&ctx=site_123&token=<hmac>
+```
+
+- Uses **HMAC-SHA256** signed tokens
+- Supports per-email + per-context unsubscription
+- Toggle: clicking unsubscribe again re-subscribes

@@ -1,0 +1,44 @@
+---
+title: Plugin System
+description: AIGCS plugin architecture and lifecycle
+---
+
+## Overview
+
+AIGCS has a plugin system with 7 lifecycle hooks. Plugins can modify comment generation,
+handle visitor comments, add server routes, and more.
+
+## Plugin Interface
+
+```typescript
+interface Plugin {
+  name: string;
+  displayName?: Record<string, string>;  // i18n display name
+  version: string;
+  description?: string;
+  homepage?: string;
+  defaultSettings?: Record<string, any>;
+  commentHandler?: 'none' | 'ai' | 'visitor' | 'both';
+  hooks: {
+    onServerInit?: (ctx: ServerContext) => void | Promise<void>;
+    beforeGenerate?: (ctx: PluginHookContext) => PluginHookContext;
+    afterGenerate?: (ctx: PluginHookContext) => PluginHookContext;
+    pageReady?: (ctx: PluginHookContext) => PluginHookContext;
+    beforeRender?: (ctx: PluginHookContext) => PluginHookContext;
+    onFetchComments?: (ctx: FetchContext) => FetchContext;
+    onCommentSubmit?: (ctx: SubmitContext) => SubmitContext;
+  };
+}
+```
+
+## Hook Execution Order
+
+```
+1. onServerInit     — Plugin starts, registers routes, timers
+2. beforeGenerate   — Modify page content before AI generation
+3. afterGenerate    — Post-generation processing
+4. pageReady        — All providers finished for a page
+5. onFetchComments  — Add visitor/fedi comments to widget response
+6. onCommentSubmit  — Handle visitor comment submission
+7. beforeRender     — Pre-render transformation
+```

@@ -1,0 +1,228 @@
+---
+title: 管理面板
+description: AIGCS 管理面板的完整指南
+---
+
+## 概述
+
+AIGCS 管理面板是一个单页应用（React + TanStack Router），包含以下部分：
+
+| 部分 | 路由 | 描述 |
+|---------|-------|-------------|
+| 仪表盘 | `/` | 系统概览和统计数据 |
+| 站点 | `/sites` | 多站点租户管理 |
+| 提供商 | `/providers` | AI 提供商配置 |
+| 提示 | `/prompts` | 系统提示模板 |
+| 缓存 | `/cache` | 页面缓存管理 |
+| 反应 | `/reactions` | Emoji 反应类型 |
+| 用户 | `/users` | 用户管理（仅管理员） |
+| 插件 | `/plugins` | 插件管理 |
+| Webhooks | `/webhooks` | Webhook 配置 |
+| API 令牌 | `/api-tokens` | API 访问令牌 |
+| 审计日志 | `/audit-log` | 活动审计追踪 |
+| 个人资料 | `/profile` | 个人设置 |
+| 设置 | `/settings` | 全局系统设置 |
+
+## 仪表盘
+
+仪表盘显示：
+- **总站点** — 注册站点数量
+- **总提供商** — 所有站点的 AI 提供商数量
+- **总评论** — 已生成的 AI 评论
+- **已缓存页面** — 已缓存内容的页面
+
+## 站点管理
+
+每个**站点**代表一个嵌入 AIGCS 评论的网站。
+
+### 站点设置
+
+| 设置 | 类型 | 默认值 | 描述 |
+|---------|------|---------|-------------|
+| `autoGenerate` | boolean | `false` | 页面访问时自动生成评论 |
+| `cacheTtl` | number | `3600` | 缓存 TTL（秒） |
+| `theme` | string | `auto` | Widget 主题（auto/light/dark） |
+| `commentPlugin` | string | — | 当前评论插件名称 |
+| `avatarMode` | string | `aigcs` | 头像模式（aigcs/mravatar/off） |
+| `contentSelector` | string | — | 页面内容提取的 CSS 选择器 |
+| `aiBadgePosition` | string | `nick` | AI 徽章位置（nick/br/tl/bl/tr/tl-inline） |
+| `reactionEnabled` | boolean | `true` | 启用 emoji 反应 |
+| `pingToken` | string | — | Ping webhook 令牌 |
+
+### 创建站点
+
+1. 点击**添加站点**
+2. 输入**域名**（例如 `blog.example.com`）
+3. 输入**名称**（例如 `我的博客`）
+4. 点击**保存**
+
+## AI 提供商管理
+
+详见 [AI 提供商](ai-providers) 章节，了解所有 14+ 个提供商的详细配置。
+
+### 提供商特性
+
+- **加密 API 密钥** — 所有 API 密钥通过 AES-256-GCM 加密存储
+- **测试提供商** — 生成示例评论以验证配置
+- **拖拽排序** — 重新排序提供商以控制评论生成优先级
+- **自定义头像** — 为每个提供商上传 SVG 头像
+
+### 提供商默认值
+
+全局提供商默认值可在**提供商**页面配置。它们作为向单个站点添加提供商时的模板。
+
+## 提示模板
+
+提示模板是用于指导 AI 模型如何生成评论的系统提示。
+
+### 特性
+
+- **8 种语言** — zh、en、ja、ko、fr、es、de、pt
+- **分类** — 按用途组织提示
+- **导入** — 从 GitHub 原始 JSON URL 批量导入
+- **全局系统提示** — 附加到所有生成提示之前
+
+### 提示格式
+
+```json
+{
+  "name": "technical-review",
+  "content": "You are a technical reviewer...",
+  "lang": "en",
+  "category": "technical",
+  "isSystem": true
+}
+```
+
+## 缓存管理
+
+缓存系统管理页面内容和 AI 评论生成。
+
+### 缓存状态
+
+| 状态 | 描述 |
+|-------|-------------|
+| `pending` | 等待获取内容和生成 |
+| `generating` | 内容正在获取，AI 提供商正在生成 |
+| `ready` | 评论可用且已缓存 |
+| `failed` | 所有提供商在生成时出错 |
+
+### 操作
+
+- **获取并生成** — 获取页面内容并生成评论
+- **预热缓存** — 批量生成多个页面
+- **清除缓存** — 移除缓存的条目
+- **恢复** — 恢复已删除的缓存条目
+
+## 反应管理
+
+提供六个内置 emoji 反应：
+
+| Emoji | 标签 | 排序 |
+|-------|-------|------|
+| 👍 | 点赞 | 1 |
+| 😄 | 微笑 | 2 |
+| 🎉 | 庆祝 | 3 |
+| ❤️ | 爱心 | 4 |
+| 🚀 | 火箭 | 5 |
+| 👀 | 眼睛 | 6 |
+
+可以添加自定义反应，也可以启用/禁用任意反应。
+
+## 用户管理
+
+仅限 **admin** 角色的用户使用。
+
+- 列出所有用户
+- 创建新用户
+- 编辑用户详细信息和角色
+
+## 插件管理
+
+详见[插件](plugins)章节。
+
+## Webhook 管理
+
+详见[Webhooks](../reference/webhooks)章节。
+
+## API 令牌
+
+三个权限级别：
+
+| 范围 | 权限 |
+|-------|-------------|
+| `read` | 公开 API 的只读访问 |
+| `read_write` | 读写访问 |
+| `admin` | 完全管理访问 |
+
+令牌以 `aigcs_` 前缀开头，以 SHA-256 哈希形式存储。
+
+## 审计日志
+
+记录所有管理操作，包含：
+- 用户 ID
+- 操作类型
+- IP 地址
+- 用户代理
+- 详细信息（JSON）
+
+审计日志按用户范围隔离——普通用户只能看到自己的操作。
+
+## 个人资料设置
+
+### 头像
+
+- 最大 2MB，格式：png/jpg/gif/webp
+- 以文件形式存储在 `data/avatars/`
+- Gravatar 回退，含超时处理
+
+### TOTP 双因素认证
+
+1. **设置** — 点击启用，使用认证器应用扫描 QR 码
+2. **验证** — 输入应用生成的验证码
+3. **备用码** — 8 个一次性恢复码（请妥善保存）
+4. **登录** — 输入密码后，输入 TOTP 验证码
+
+### 修改密码
+
+需要当前密码验证。密码使用 **Argonid** 哈希。
+
+## 系统设置
+
+### SMTP
+
+| 字段 | 描述 |
+|-------|-------------|
+| Host | SMTP 服务器主机名 |
+| Port | SMTP 端口（默认：587） |
+| User | SMTP 用户名 |
+| Password | 加密存储 |
+| From Email | 发件人地址 |
+| From Name | 发件人显示名称 |
+
+### CAPTCHA
+
+支持的提供商：
+
+| 提供商 | 环境变量 |
+|----------|--------------|
+| Cloudflare Turnstile | `TURNSTILE_SITE_KEY`、`TURNSTILE_SECRET_KEY` |
+| Google reCAPTCHA | `RECAPTCHA_SITE_KEY`、`RECAPTCHA_SECRET_KEY` |
+| GeeTest | `GEETEST_CAPTCHA_ID`、`GEETEST_CAPTCHA_KEY` |
+| hCaptcha | `HCAPTCHA_SITE_KEY`、`HCAPTCHA_SECRET_KEY` |
+| Altcha | `ALTCHA_SITE_KEY`、`ALTCHA_SECRET_KEY` |
+| CAP.so | `CAP_SITE_KEY`、`CAP_SECRET_KEY`、`CAP_VERIFY_URL` |
+
+### CORS
+
+- 空列表：仅允许站点域名
+- `*`：允许所有来源
+- 逗号分隔的 URL：允许特定来源
+
+### 速率限制
+
+| 限制 | 默认值 | 范围 |
+|-------|---------|-------|
+| Admin API | 100 次/60 秒 | 每个 IP |
+| Widget 反应 | 50 次/小时 | 每个访客 |
+| 验证码 | 5 次/天 | 每个邮箱 |

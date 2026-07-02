@@ -1,0 +1,165 @@
+---
+title: Webhooks
+description: Webhook event reference
+---
+
+## Overview
+
+Webhooks deliver real-time notifications to external services when events occur.
+
+### Endpoint
+
+```
+POST <your-webhook-url>
+```
+
+### Headers
+
+| Header | Description |
+|--------|-------------|
+| `Content-Type` | `application/json` |
+| `X-AIGCS-Signature` | HMAC-SHA256 signature (if secret configured) |
+
+### Body Format
+
+```json
+{
+  "event": "comment.generated",
+  "site_id": "site_uuid",
+  "data": { ... },
+  "timestamp": "2026-07-01T12:00:00Z"
+}
+```
+
+## Events
+
+### `comment.generated`
+
+Triggered when AI comments are generated for a page.
+
+```json
+{
+  "event": "comment.generated",
+  "site_id": "uuid",
+  "data": {
+    "path": "/blog/post",
+    "pageTitle": "My Blog Post",
+    "commentCount": 5
+  }
+}
+```
+
+### `comment.reacted`
+
+Triggered when a visitor adds or removes a reaction.
+
+```json
+{
+  "event": "comment.reacted",
+  "site_id": "uuid",
+  "data": {
+    "path": "/blog/post",
+    "emoji": "👍",
+    "action": "add"
+  }
+}
+```
+
+### `cache.cleared`
+
+Triggered when page cache is cleared.
+
+```json
+{
+  "event": "cache.cleared",
+  "site_id": "uuid",
+  "data": {
+    "paths": ["/blog/post"],
+    "count": 1
+  }
+}
+```
+
+### `cache.warm_completed`
+
+Triggered when a cache warm batch completes.
+
+```json
+{
+  "event": "cache.warm_completed",
+  "site_id": "uuid",
+  "data": {
+    "total": 50,
+    "success": 48,
+    "failed": 2
+  }
+}
+```
+
+### `rss.import_completed`
+
+Triggered when RSS import finishes.
+
+```json
+{
+  "event": "rss.import_completed",
+  "site_id": "uuid",
+  "data": {
+    "source": "https://blog.example.com/feed.xml",
+    "imported": 10
+  }
+}
+```
+
+### `provider.created` / `provider.updated`
+
+Triggered when AI providers are created or updated.
+
+```json
+{
+  "event": "provider.created",
+  "site_id": "uuid",
+  "data": {
+    "type": "openai",
+    "model": "gpt-4o-mini"
+  }
+}
+```
+
+### Wildcard: `*`
+
+Subscribes to all events.
+
+## HMAC Signature Verification
+
+If a webhook has a secret, each request includes `X-AIGCS-Signature`.
+
+### Verification (Node.js)
+
+```javascript
+const crypto = require('crypto');
+
+function verifyWebhook(body, signature, secret) {
+  const hmac = crypto.createHmac('sha256', secret);
+  hmac.update(JSON.stringify(body));
+  const expected = `sha256=${hmac.digest('hex')}`;
+  return crypto.timingSafeEqual(
+    Buffer.from(expected),
+    Buffer.from(signature)
+  );
+}
+```
+
+## Ping Webhooks
+
+External systems can trigger AIGCS actions via signed ping URLs:
+
+```
+POST /api/widget/:domain/ping/rss/:token
+POST /api/widget/:domain/ping/cache/:token
+```
+
+| Endpoint | Action |
+|----------|--------|
+| `/ping/rss/:token` | Trigger RSS fetch (optional `?slug=` for single entry) |
+| `/ping/cache/:token` | Trigger cache warm |

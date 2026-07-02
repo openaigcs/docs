@@ -1,0 +1,66 @@
+---
+title: Local Development
+description: Set up a local development environment for AIGCS
+---
+
+## Prerequisites
+
+- **Node.js** >= 24.0.0
+- **pnpm** >= 9.0.0
+- **Docker** (optional, for database or full-stack testing)
+
+## Setup
+
+```bash
+# Clone the repository
+git clone https://github.com/openaigcs/aigcs.git
+cd aigcs
+
+# Install all dependencies
+pnpm install
+
+# Build all packages
+pnpm build
+```
+
+## Running Services
+
+Start each service in a separate terminal:
+
+```bash
+# Server (API + admin panel)
+pnpm --filter @aigcs/server dev
+
+# Admin panel (standalone dev server with HMR)
+pnpm --filter @aigcs/admin dev
+
+# Widget (watch mode)
+pnpm --filter @aigcs/widget dev
+```
+
+## Environment Variables
+
+Create `.env.local` in the project root:
+
+```bash
+echo 'JWT_SECRET=dev-secret-change-in-production' > .env.local
+echo 'ENCRYPTION_KEY=dev-encryption-key' >> .env.local
+```
+
+See the [Configuration Reference](../reference/config) for all available options.
+
+## Useful Commands
+
+```bash
+# Build specific package
+pnpm --filter @aigcs/server build
+
+# Run tests
+pnpm --filter @aigcs/core test
+
+# Lint all packages
+pnpm lint
+
+# TypeScript type checking
+pnpm typecheck
+```

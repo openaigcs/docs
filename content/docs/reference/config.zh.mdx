@@ -1,0 +1,58 @@
+---
+title: 配置参考
+description: 配置模式参考
+---
+
+## 系统配置
+
+`system_config` 表存储全局配置。可通过管理面板的**设置**访问。
+
+### 字段
+
+| 字段 | 类型 | 描述 |
+|-------|------|-------------|
+| `smtp_host` | string | SMTP 服务器 |
+| `smtp_port` | number | SMTP 端口 |
+| `smtp_user` | string | SMTP 用户名 |
+| `smtp_pass` | string | 加密密码 |
+| `smtp_from_email` | string | 发件人邮箱 |
+| `smtp_from_name` | string | 发件人名称 |
+| `registration_open` | boolean | 允许公开注册 |
+| `allowed_origins` | string[] | CORS 来源 |
+| `site_title` | string | 管理面板标题 |
+| `site_favicon` | string | Favicon URL |
+| `captcha_provider` | string | 当前 CAPTCHA 提供商 |
+
+## 站点设置 JSON 模式
+
+每个站点有一个 `settings` JSON 列，包含以下字段：
+
+| 字段 | 类型 | 默认值 | 描述 |
+|-------|------|---------|-------------|
+| `autoGenerate` | boolean | `false` | 页面访问时自动生成 |
+| `cacheTtl` | number | `3600` | 缓存 TTL（秒） |
+| `theme` | string | `auto` | Widget 主题 |
+| `commentPlugin` | string | `""` | 当前评论插件 |
+| `avatarMode` | string | `aigcs` | 头像模式 |
+| `contentSelector` | string | `""` | 内容的 CSS 选择器 |
+| `aiBadgePosition` | string | `nick` | AI 徽章位置 |
+| `reactionEnabled` | boolean | `true` | 启用反应 |
+| `emailNotify` | boolean | `true` | 邮件通知 |
+| `pingToken` | string | `""` | Ping Webhook 令牌 |
+| `rssUrl` | string | `""` | RSS 订阅 URL |
+| `fediConfig` | object | `{}` | 联邦宇宙插件配置 |
+
+## 插件清单格式
+
+```json
+{
+  "name": "my-plugin",
+  "version": "1.0.0",
+  "description": "Plugin description",
+  "homepage": "https://github.com/user/my-plugin",
+  "commentHandler": "visitor",
+  "defaultSettings": {
+    "setting1": "value1"
+  }
+}
+```

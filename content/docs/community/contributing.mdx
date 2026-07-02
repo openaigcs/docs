@@ -1,0 +1,71 @@
+---
+title: Contributing
+description: How to contribute to AIGCS
+---
+
+## Development Setup
+
+```bash
+# Clone the repository
+git clone https://github.com/openaigcs/aigcs.git
+cd aigcs
+
+# Install dependencies
+pnpm install
+
+# Build all packages
+pnpm build
+
+# Start development server
+pnpm --filter @aigcs/server dev
+pnpm --filter @aigcs/admin dev
+pnpm --filter @aigcs/widget dev
+```
+
+## Project Structure
+
+```
+packages/
+├── core/         # Shared types, schema, constants
+├── server/       # Hono API server
+├── admin/        # React SPA admin panel
+├── widget/       # Web Component
+└── edgeone/      # EdgeOne Makers deployment
+packages/plugins/
+├── native/       # Visitor comments
+└── mastodon/     # Fediverse integration
+```
+
+## Code Style
+
+- **TypeScript** strict mode
+- **Prettier**: no semicolons, single quotes, trailing commas, 100 width
+- **ESM** modules (all packages have `"type": "module"`)
+- Server imports use `.js` extension (`import './foo.js'`)
+
+## Commit Convention
+
+```
+feat: add new feature
+fix: fix a bug
+chore: maintenance tasks
+docs: documentation changes
+refactor: code refactoring
+test: add or update tests
+```
+
+## Pull Request Process
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Run `pnpm lint` and `pnpm typecheck`
+5. Submit a PR with a clear description
+
+## i18n Contributions
+
+Translation files are in `packages/admin/src/locales/`:
+- `zh.json` — Chinese
+- `en.json` — English
+
+Add or update translation keys in both files.

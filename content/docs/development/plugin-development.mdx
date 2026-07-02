@@ -1,0 +1,44 @@
+---
+title: Plugin Development
+description: Overview of the AIGCS plugin system
+---
+
+## Plugin System Overview
+
+AIGCS plugins extend the server's behavior by hooking into the comment generation lifecycle. Plugins can:
+
+- Modify AI-generated comment content
+- Add custom comment handlers
+- Integrate with external services
+- Process or filter visitor-submitted comments
+
+## Hook Lifecycle
+
+```
+beforeGenerate → generate → afterGenerate → beforeRender → afterRender
+```
+
+| Hook | Timing | Use Case |
+|------|--------|----------|
+| `beforeGenerate` | Before AI generates a comment | Modify system prompt, add context |
+| `afterGenerate` | After AI returns a response | Validate, filter, or enrich comments |
+| `beforeRender` | Before comment is served to widget | Transform display content |
+| `afterRender` | After comment is rendered | Logging, analytics |
+
+For a concrete implementation example and file structure, see the [Plugin Best Practices](../plugins/best-practices) page.
+
+## Loading Plugins
+
+- **Development**: Place your plugin in the `plugins/` directory
+- **Production**: Upload via the admin panel (Settings → Plugins)
+- Enable/disable takes effect immediately — no server restart required
+
+## Comment Handlers
+
+The `commentHandler` field in the plugin manifest determines how the plugin handles comments:
+
+| Handler | Behavior |
+|---------|----------|
+| `"none"` | No automatic comment generation |
+| `"replace"` | Replaces default AI-generated comments with plugin output |
+| `"append"` | Adds plugin content alongside AI comments |

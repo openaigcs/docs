@@ -1,0 +1,175 @@
+---
+title: API 参考
+description: 完整的 API 端点参考
+---
+
+## 概述
+
+所有 API 端点返回 JSON 响应。
+
+### 基础 URL
+
+```
+http://您的服务器:41905/api
+```
+
+### 响应格式
+
+```json
+{
+  "code": 200,
+  "data": { ... }
+}
+```
+
+错误响应：
+
+```json
+{
+  "code": 401,
+  "message": "Unauthorized"
+}
+```
+
+### 身份验证
+
+| 方式 | 请求头 |
+|--------|--------|
+| JWT | `Authorization: Bearer <token>` |
+| API Token | `Authorization: Bearer <token>` |
+| CSRF（管理端） | `X-Requested-With: XMLHttpRequest` |
+
+## 公开端点
+
+| 方法 | 路径 | 描述 |
+|--------|------|-------------|
+| GET | `/api/health` | 健康检查 → `{ status: 200 }` |
+| GET | `/widget.js` | Widget JS 包 |
+| GET | `/api/avatar-proxy?url=` | 代理并缓存外部头像 |
+
+## 认证端点（`/api/auth`）
+
+| 方法 | 路径 | 认证 | 描述 |
+|--------|------|------|-------------|
+| POST | `/register` | — | 注册新用户 |
+| POST | `/login` | — | 通过邮箱或用户名登录 |
+| POST | `/totp/verify` | — | 完成 TOTP 升级认证 |
+| GET | `/me` | Bearer | 获取当前用户资料 |
+| PUT | `/me` | Bearer | 更新资料 |
+| POST | `/change-password` | Bearer | 修改密码 |
+| POST | `/refresh` | — | 刷新访问令牌 |
+| POST | `/avatar` | Bearer | 上传头像（最大 2MB） |
+| DELETE | `/avatar` | Bearer | 移除头像 |
+| GET | `/avatar/:userId` | — | 提供头像图片 |
+| POST | `/totp/setup` | Bearer | 生成 TOTP 密钥 + QR 码 |
+| POST | `/totp/enable` | Bearer | 启用 TOTP |
+| POST | `/totp/disable` | Bearer | 禁用 TOTP |
+
+## Widget 端点（`/api/widget`）
+
+| 方法 | 路径 | 描述 |
+|--------|------|-------------|
+| GET | `/:domain/comments?path=` | 获取页面评论 |
+| POST | `/:domain/react` | 切换反应 |
+| POST | `/:domain/comment` | 提交访客评论 |
+| PUT | `/:domain/comment/:id` | 编辑访客评论 |
+| DELETE | `/:domain/comment/:id` | 删除访客评论 |
+| POST | `/:domain/comment/:id/request-delete` | 请求删除验证码 |
+| POST | `/:domain/comment/:id/verify-delete` | 验证并删除 |
+| POST | `/:domain/ping/:type/:token` | Ping webhook 接收器 |
+
+## 管理端点（`/api/admin`）
+
+所有请求需要 `Authorization: Bearer <token>` + `X-Requested-With: XMLHttpRequest`。
+
+### 站点
+
+| 方法 | 路径 | 描述 |
+|--------|------|-------------|
+| GET | `/sites` | 列出用户站点 |
+| POST | `/sites` | 创建站点 |
+| GET | `/sites/:id` | 获取站点 |
+| PUT | `/sites/:id` | 更新站点 |
+| DELETE | `/sites/:id` | 删除站点 |
+
+### 提供商
+
+| 方法 | 路径 | 描述 |
+|--------|------|-------------|
+| GET | `/sites/:siteId/providers` | 列出提供商 |
+| POST | `/sites/:siteId/providers` | 创建提供商 |
+| PATCH | `/sites/:siteId/providers/:id` | 更新提供商 |
+| DELETE | `/sites/:siteId/providers/:id` | 删除提供商 |
+| POST | `/sites/:siteId/providers/:id/test` | 测试提供商 |
+| GET | `/builtin-providers` | 列出内置提供商 |
+| GET | `/provider-defaults` | 获取提供商默认值 |
+| PUT | `/provider-defaults` | 保存提供商默认值 |
+
+### 缓存与评论
+
+| 方法 | 路径 | 描述 |
+|--------|------|-------------|
+| GET | `/sites/:siteId/cache` | 列出页面缓存 |
+| POST | `/sites/:siteId/cache/clear` | 清除缓存 |
+| POST | `/sites/:siteId/cache/warm` | 预热缓存 |
+| POST | `/sites/:siteId/cache/generate` | 生成评论 |
+| GET | `/sites/:siteId/comments` | 列出评论 |
+
+### 提示
+
+| 方法 | 路径 | 描述 |
+|--------|------|-------------|
+| GET | `/prompts` | 列出提示模板 |
+| POST | `/prompts` | 创建提示 |
+| DELETE | `/prompts/:id` | 删除提示 |
+| POST | `/prompts/import` | 从 GitHub URL 导入 |
+
+### Webhooks
+
+| 方法 | 路径 | 描述 |
+|--------|------|-------------|
+| GET | `/sites/:siteId/webhooks` | 列出 webhooks |
+| POST | `/sites/:siteId/webhooks` | 创建 webhook |
+| PATCH | `/sites/:siteId/webhooks/:id` | 更新 webhook |
+| DELETE | `/sites/:siteId/webhooks/:id` | 删除 webhook |
+
+### 插件
+
+| 方法 | 路径 | 描述 |
+|--------|------|-------------|
+| GET | `/plugins` | 列出所有插件 |
+| POST | `/plugins/:name/toggle` | 切换插件 |
+| DELETE | `/plugins/:name` | 卸载插件 |
+
+### 系统
+
+| 方法 | 路径 | 认证 | 描述 |
+|--------|------|------|-------------|
+| GET | `/system/config` | Admin | 获取系统配置 |
+| PUT | `/system/config` | Admin | 更新系统配置 |
+| POST | `/system/smtp-test` | Admin | 发送测试邮件 |
+| GET | `/dashboard/stats` | Bearer | 仪表盘统计 |
+| GET | `/audit-log` | Bearer | 审计日志 |
+| GET | `/export` | Bearer | 导出 JSON 数据 |
+
+## Mastodon 插件端点
+
+这些由 Mastodon 插件动态注册：
+
+| 方法 | 路径 | 描述 |
+|--------|------|-------------|
+| GET | `.../mastodon/bindings` | 列出绑定 |
+| POST | `.../mastodon/bindings` | 创建绑定 |
+| DELETE | `.../mastodon/bindings/:id` | 删除绑定 |
+| POST | `.../mastodon/bindings/:id/refresh` | 刷新评论 |
+| POST | `.../mastodon/test-connection` | 测试实例 |
+| POST | `.../mastodon/oauth/start` | 开始 OAuth 流程 |
+| POST | `.../mastodon/publish` | 发布嘟文并绑定 |
+| GET | `.../mastodon/config` | 获取联邦宇宙配置 |
+| PUT | `.../mastodon/config` | 更新联邦宇宙配置 |
+
+## 取消订阅
+
+| 方法 | 路径 | 描述 |
+|--------|------|-------------|
+| GET | `/api/unsubscribe?email=&ctx=&token=` | 切换取消订阅 |

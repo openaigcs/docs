@@ -1,0 +1,156 @@
+---
+title: Security
+description: Security features and configuration
+---
+
+## Authentication
+
+### Registration
+
+- First registered user gets the **admin** role
+- Subsequent registration controlled by `REGISTRATION_OPEN` env var
+- Registration requires email, username, and password
+
+### Login Flow
+
+```
+1. User submits email/username + password
+2. Server verifies with Argon2id hash
+3. If TOTP enabled → return tempToken, require TOTP code
+4. If TOTP disabled → return access + refresh tokens
+```
+
+### JWT Tokens
+
+| Token | Lifetime | Usage |
+|-------|----------|-------|
+| Access Token | 15 minutes | API authentication (`Authorization: Bearer`) |
+| Refresh Token | 7 days | Get new access token via `POST /auth/refresh` |
+
+## Two-Factor Authentication (TOTP)
+
+AIGCS supports Time-based One-Time Password (TOTP) 2FA.
+
+### Setup
+
+1. Go to **Profile → Two-Factor Authentication**
+2. Click **Enable** (requires re-entering password)
+3. Scan the QR code with your authenticator app (Google Authenticator, Authy, etc.)
+4. Enter a code from the app to verify
+5. Save the **8 backup codes** (each can be used once)
+
+### Login with TOTP
+
+```
+POST /api/auth/login
+→ 200 with tempToken (TOTP required)
+
+POST /api/auth/totp/verify
+Body: { tempToken, code }
+→ 200 with access + refresh tokens
+```
+
+### Recovery
+
+If you lose access to your authenticator app, use one of the 8 backup codes.
+
+## API Tokens
+
+API tokens provide machine access without browser login.
+
+```
+aigcs_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+```
+
+| Scope | Permissions |
+|-------|-------------|
+| `read` | Read-only access to public APIs |
+| `read_write` | Read and write to widget/comments APIs |
+| `admin` | Full admin API access |
+
+Tokens are stored as **SHA-256** hashes.
+
+## CSRF Protection
+
+All mutating requests to `/api/admin/*` require the header:
+
+```
+X-Requested-With: XMLHttpRequest
+```
+
+The admin panel automatically adds this header to all fetch requests.
+
+## CORS Configuration
+
+Configured in **Settings → CORS Allowed Origins** and `ALLOWED_ORIGINS` env var.
+
+| Setting | Behavior |
+|---------|----------|
+| Empty list | Only site's registered domain allowed |
+| `*` | All origins allowed |
+| Comma-separated URLs | Specific origins only |
+
+Widget requests also validate Origin against the site's domain.
+
+## Rate Limiting
+
+| Limit | Default | Scope |
+|-------|---------|-------|
+| Admin API | 100 req / 60s | Per IP |
+| Widget Reactions | 50 req / hour | Per visitor |
+| Verification Codes | 5 req / day | Per email |
+
+Configure via `RATE_LIMIT_MAX` and `RATE_LIMIT_WINDOW` env vars.
+
+## CAPTCHA
+
+Configure in **Settings → CAPTCHA**. Supported providers:
+
+| Provider | Type | Notes |
+|----------|------|-------|
+| Cloudflare Turnstile | Free, invisible | Recommended |
+| Google reCAPTCHA | Free | v2/v3 |
+| GeeTest | Commercial | v4 |
+| hCaptcha | Free/paid | Privacy-focused |
+| Altcha | Self-hosted | Local HMAC verification |
+| CAP.so | Commercial | |
+
+## SSRF Protection
+
+`safeFetch` protects against Server-Side Request Forgery:
+
+- **Blocks private IPs**: 10.x, 172.16-31.x, 192.168.x, localhost, 127.x.x.x
+- **Limits redirects**: max 5 redirects
+- **Limits response size**: max 10MB
+- Used for: avatar proxy, page content fetching
+
+## Encryption
+
+| Data | Algorithm |
+|------|-----------|
+| API Keys | AES-256-GCM |
+| SMTP Passwords | AES-256-GCM |
+| TOTP Secrets | AES-256-GCM |
+
+Encryption key derived from `ENCRYPTION_KEY` (falls back to `JWT_SECRET`).
+
+## Password Hashing
+
+| Algorithm | Status |
+|-----------|--------|
+| Argon2id | Primary (resistant to GPU/ASIC attacks) |
+| bcrypt | Legacy support (auto-upgraded on login) |
+
+## XSS Prevention
+
+- **Server-side**: DOMPurify sanitization with allowlisted tags
+- **Client-side**: Widget uses `textContent` for all content insertion
+- **Allowed tags**: `p, br, strong, em, b, i, a, ul, ol, li, blockquote, pre, code, h1-h6`
+
+## HSTS
+
+```
+Strict-Transport-Security: max-age=31536000; includeSubDomains
+```
+
+Enabled by default in the server middleware.

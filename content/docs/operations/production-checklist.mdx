@@ -1,0 +1,30 @@
+---
+title: Production Checklist
+description: Checklist for production deployment
+---
+
+## Required
+
+- [ ] **Change JWT_SECRET** — generate a random 64-character string
+- [ ] **Set ENCRYPTION_KEY** — separate from JWT_SECRET, random 64-char
+- [ ] **Enable HTTPS** — use Nginx/Caddy with Let's Encrypt
+- [ ] **Configure CORS** — set `ALLOWED_ORIGINS` to your site domain(s)
+- [ ] **Set strong admin password** — use a password manager
+
+## Recommended
+
+- [ ] **Configure SMTP** — for email notifications and password recovery
+- [ ] **Enable CAPTCHA** — Cloudflare Turnstile (free, no friction)
+- [ ] **Enable TOTP 2FA** — for admin account
+- [ ] **Set up monitoring** — health check endpoint `/api/health`
+- [ ] **Regular backups** — schedule daily DB backups
+- [ ] **Rate limiting** — adjust limits based on traffic
+- [ ] **Database connection pool** — tune for your DB
+
+## Optional
+
+- [ ] **Custom domain** — configure reverse proxy with your domain
+- [ ] **CDN caching** — Cloudflare or similar for widget.js
+- [ ] **Redis caching** — for improved performance under high load
+- [ ] **PM2 / systemd** — process manager for uptime
+- [ ] **Log aggregation** — forward Docker logs to external service

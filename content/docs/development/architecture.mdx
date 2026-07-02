@@ -1,0 +1,53 @@
+---
+title: Architecture
+description: AIGCS system architecture overview
+---
+
+## Overview
+
+AIGCS is a monorepo with six packages under `packages/` and plugins under `packages/plugins/`:
+
+```
+packages/
+├── core/         Shared types, Drizzle ORM schema, constants
+├── server/       Hono HTTP API server, middleware, AI providers
+├── admin/        React SPA admin panel (TanStack Router + Kumo UI)
+├── widget/       Web Component for displaying comments (Shadow DOM)
+└── edgeone/      EdgeOne Makers deployment bundle
+packages/plugins/
+├── native/       Visitor comments plugin
+└── mastodon/     Fediverse/ActivityPub integration
+```
+
+## Data Flow
+
+```
+User Browser                    AIGCS Server                    AI Provider
+     │                              │                              │
+     │  ── Widget loads ────────►   │                              │
+     │  ◄── comments JSON ────────  │                              │
+     │                              │                              │
+     │  ── fetch page content ──►   │                              │
+     │                              │  ── generate prompt ──────►  │
+     │                              │  ◄── AI response ──────────  │
+     │  ◄── AI comment stored ────  │                              │
+```
+
+## Request Lifecycle
+
+1. **Widget** loads via `<script>` on the user's website
+2. Widget fetches comments from the **Server** API
+3. Server checks the page cache:
+   - **Cached**: returns existing AI comments immediately
+   - **Not cached**: fetches page content → sends to AI provider → generates comment → caches
+4. Comments are displayed in the Widget (CDN-cached with ETag)
+
+## Plugin System
+
+Plugins hook into the server lifecycle via a hook system:
+
+```
+beforeGenerate → generate → afterGenerate → beforeRender → afterRender
+```
+
+Each hook receives a context object (`PluginHookContext`) with access to request data, comments, and server configuration.

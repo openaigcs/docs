@@ -1,0 +1,71 @@
+---
+title: 贡献指南
+description: 如何为 AIGCS 做出贡献
+---
+
+## 开发环境搭建
+
+```bash
+# 克隆仓库
+git clone https://github.com/openaigcs/aigcs.git
+cd aigcs
+
+# 安装依赖
+pnpm install
+
+# 构建所有包
+pnpm build
+
+# 启动开发服务器
+pnpm --filter @aigcs/server dev
+pnpm --filter @aigcs/admin dev
+pnpm --filter @aigcs/widget dev
+```
+
+## 项目结构
+
+```
+packages/
+├── core/         # 共享类型、模式、常量
+├── server/       # Hono API 服务器
+├── admin/        # React SPA 管理面板
+├── widget/       # Web 组件
+└── edgeone/      # EdgeOne Makers 部署
+packages/plugins/
+├── native/       # 访客评论
+└── mastodon/     # 联邦宇宙集成
+```
+
+## 代码风格
+
+- **TypeScript** 严格模式
+- **Prettier**：无分号、单引号、尾逗号、行宽 100
+- **ESM** 模块（所有包有 `"type": "module"`）
+- 服务端导入使用 `.js` 扩展名（`import './foo.js'`）
+
+## 提交规范
+
+```
+feat: 添加新功能
+fix: 修复 bug
+chore: 维护任务
+docs: 文档变更
+refactor: 代码重构
+test: 添加或更新测试
+```
+
+## 拉取请求流程
+
+1. Fork 仓库
+2. 创建功能分支
+3. 进行修改
+4. 运行 `pnpm lint` 和 `pnpm typecheck`
+5. 提交带有清晰描述的 PR
+
+## 国际化贡献
+
+翻译文件位于 `packages/admin/src/locales/`：
+- `zh.json` — 中文
+- `en.json` — 英文
+
+在两个文件中添加或更新翻译键值。

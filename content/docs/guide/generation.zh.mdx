@@ -1,0 +1,136 @@
+---
+title: 内容生成
+description: AI 生成的评论如何工作
+---
+
+## 生成流程
+
+当访客浏览带有 AIGCS widget 的页面时，会发生以下过程：
+
+```
+1. Widget 通过 API 请求评论
+2. 服务器检查 page_cache 中的现有评论
+   ├─ 已缓存 & 就绪 → 立即返回
+   ├─ 已缓存 & 生成中 → 返回"生成中"状态及预计等待时间
+   └─ 未缓存 → 触发生成
+3. 生成过程：
+   a. 获取页面内容（带缓存/ETag）
+   b. 通过选择器提取可读内容
+   c. 组装系统提示（全局 + 模板）
+   d. 并行发送到所有已启用的 AI 提供商
+   e. 净化和去重响应（通过 content_md5）
+   f. 存储评论并更新页面状态为"ready"
+   g. 发送通知（邮件 + webhook）
+```
+
+## 触发生成
+
+| 方式 | 描述 |
+|--------|-------------|
+| **页面访问时** | 启用 `autoGenerate` 后，第一个访客触发 |
+| **RSS 导入** | 导入 RSS/Atom/Sitemap URL，定时任务生成评论 |
+| **手动** | 管理面板：缓存 → 获取并生成 |
+| **缓存预热** | 管理面板：批量生成多个页面 |
+| **Ping Webhook** | 外部系统通过签名 URL 触发生成 |
+
+## 页面内容提取
+
+在获取页面内容用于 AI 生成时，AIGCS 使用回退链：
+
+```
+1. 用户定义的 CSS 选择器（来自站点设置）
+2. 站点 `contentSelector`（逗号分隔的选择器）
+3. 46 个内置选择器（WordPress、Hugo、Hexo、Ghost 等）
+4. <article> 元素
+5. Mozilla Readability 算法
+6. <main> 元素
+7. <body>（去除脚本、样式、标签）
+```
+
+### 内容选择器
+
+内置选择器覆盖流行的 CMS 和框架：
+
+- **WordPress**: `article`, `.post-content`, `.entry-content`
+- **Hugo**: `.post-content`, `.article-content`
+- **Hexo**: `.post-content`, `.article-entry`
+- **Ghost**: `.post-full-content`, `.article-content`
+- **Jekyll**: `.post-content`, `.entry-content`
+- **VuePress**: `.theme-default-content`
+- 以及 38+ 更多...
+
+## 提示系统
+
+提示组装遵循以下顺序：
+
+```
+1. 全局系统提示（来自 system_config）
+2. 语言特定的提示模板（来自 prompt_templates）
+3. 页面标题和内容作为上下文附加
+```
+
+提示模板支持 **8 种语言**：zh、en、ja、ko、fr、es、de、pt。
+
+## 内容净化
+
+AI 生成的内容在服务端使用 DOMPurify 进行净化：
+
+**允许的标签：** `p, br, strong, em, b, i, a, ul, ol, li, blockquote, pre, code, h1-h6`
+
+## 去重
+
+评论使用 `content_md5`（生成内容的 MD5 哈希）进行去重。
+这可以防止相同的评论被多次存储。
+
+## 页面锁定
+
+页面级锁防止并发生成：
+
+```
+第一个请求 → 获取锁 → 生成评论
+其他请求 → 收到"生成中"状态及 estimatedWait: 30s
+```
+
+## 缓存架构
+
+| 层 | 实现 | TTL |
+|-------|---------------|-----|
+| 内存 | 内存 LRU（最大 1000 条） | 300s |
+| Redis | 可选，通过插件配置 | 可配置 |
+| CDN | ETag + Cache-Control 请求头 | s-maxage=300 |
+
+## RSS 集成
+
+### RSS 导入
+
+AIGCS 可以从 RSS/Atom 订阅源和站点地图导入 URL：
+
+```bash
+# 从管理面板触发
+POST /api/admin/sites/:siteId/import-rss
+请求体：{ "url": "https://blog.example.com/feed.xml" }
+```
+
+支持的格式：
+- **RSS 2.0** — `<item>` 条目
+- **Atom** — `<entry>` 条目
+- **Sitemap** — `<url>` 条目
+
+### 定时任务调度
+
+| 预设 | Cron 表达式 |
+|--------|----------------|
+| 每小时 | `0 * * * *` |
+| 每 6 小时 | `0 */6 * * *` |
+| 每天 | `0 0 * * *` |
+| 每周 | `0 0 * * 0` |
+
+也支持自定义 5 字段 cron 表达式。
+
+### 缓存预热
+
+批量生成多个页面的评论，支持可配置：
+- **并发数** — 1 到 20 个并行请求
+- **间隔** — 批次之间的延迟（避免速率限制）
+- **提供商过滤** — 限制到特定 AI 提供商
+- **CSS 选择器** — 覆盖内容提取

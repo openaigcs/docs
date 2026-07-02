@@ -1,0 +1,219 @@
+---
+title: Installation
+description: Complete installation guide for all deployment options
+---
+
+## Docker Deployment (Recommended)
+
+### Using Docker Run
+
+```bash
+docker run -d \
+  --name aigcs \
+  -p 41905:41905 \
+  -e JWT_SECRET="<your-secret>" \
+  -e ENCRYPTION_KEY="<your-encryption-key>" \
+  -v ./data:/app/data \
+  openaigcs/aigcs:latest
+```
+
+### Using Docker Compose
+
+Create `compose.yml`:
+
+```yaml
+services:
+  aigcs:
+    image: openaigcs/aigcs:latest
+    container_name: aigcs
+    ports:
+      - "41905:41905"
+    environment:
+      - JWT_SECRET=<change-this>
+      - ENCRYPTION_KEY=<change-this>
+      - NODE_ENV=production
+    volumes:
+      - ./data:/app/data
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "http://localhost:41905/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+```
+
+```bash
+docker compose up -d
+```
+
+### Environment Variables
+
+| Variable | Default | Required | Description |
+|----------|---------|----------|-------------|
+| `PORT` | `41905` | No | HTTP service port (leetspeak: aigcs → 41905) |
+| `DATABASE_URL` | `file:./data/aigcs.db` | No | SQLite database file path |
+| `JWT_SECRET` | — | ✅ | JWT signing secret (must change in production) |
+| `ENCRYPTION_KEY` | `JWT_SECRET` | No | AES-256-GCM encryption key (recommended separate from JWT_SECRET) |
+| `RATE_LIMIT_MAX` | `100` | No | Max requests per window |
+| `RATE_LIMIT_WINDOW` | `60` | No | Rate limit window (seconds) |
+| `SMTP_HOST` | — | No | SMTP server address |
+| `SMTP_PORT` | `587` | No | SMTP port |
+| `SMTP_USER` | — | No | SMTP username |
+| `SMTP_PASS` | — | No | SMTP password |
+| `SMTP_FROM` | — | No | Sender email address |
+| `CAPTCHA_PROVIDER` | — | No | Captcha type: `turnstile` / `recaptcha` / `geetest` / `none` |
+| `TURNSTILE_SITE_KEY` | — | No | Cloudflare Turnstile Site Key |
+| `TURNSTILE_SECRET_KEY` | — | No | Cloudflare Turnstile Secret Key |
+| `RECAPTCHA_SITE_KEY` | — | No | Google reCAPTCHA Site Key |
+| `RECAPTCHA_SECRET_KEY` | — | No | Google reCAPTCHA Secret Key |
+| `GEETEST_ID` | — | No | Geetest ID |
+| `GEETEST_KEY` | — | No | Geetest Key |
+| `ALLOWED_ORIGINS` | `[]` | No | Allowed CORS origins (JSON array string) |
+| `REGISTRATION_OPEN` | `false` | No | Whether registration is open |
+| `GLOBAL_SYSTEM_PROMPT` | — | No | Global AI system prompt |
+
+## Manual Deployment
+
+### Prerequisites
+
+- Node.js >= 24.0.0
+- pnpm >= 9.0.0
+
+### Steps
+
+```bash
+# Clone the repository
+git clone https://github.com/openaigcs/aigcs.git
+cd aigcs
+
+# Install dependencies
+pnpm install
+
+# Build all packages
+pnpm build
+
+# Create .env.local with your config
+echo 'JWT_SECRET=your-random-secret' > .env.local
+
+# Start the server
+pnpm --filter @aigcs/server start
+```
+
+The server starts on port `41905` by default.
+
+### Process Manager (PM2)
+
+```bash
+npm install -g pm2
+pm2 start node --name aigcs -- packages/server/dist/index.js
+pm2 save
+pm2 startup
+```
+
+### Systemd Service
+
+```ini
+[Unit]
+Description=AIGCS Comment System
+After=network.target
+
+[Service]
+Type=simple
+User=node
+WorkingDirectory=/opt/aigcs
+ExecStart=/usr/local/bin/node packages/server/dist/index.js
+Restart=always
+Environment=NODE_ENV=production
+
+[Install]
+WantedBy=multi-user.target
+```
+
+## Reverse Proxy
+
+### Nginx
+
+```nginx
+server {
+    listen 443 ssl;
+    server_name comments.example.com;
+
+    ssl_certificate /path/to/cert.pem;
+    ssl_certificate_key /path/to/key.pem;
+
+    location / {
+        proxy_pass http://127.0.0.1:41905;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+```
+
+### Caddy
+
+```caddy
+comments.example.com {
+    reverse_proxy 127.0.0.1:41905
+}
+```
+
+## EdgeOne Makers [WIP]
+
+<Callout type="warn">EdgeOne Makers deployment is planned but not yet implemented.</Callout>
+
+> EdgeOne Makers support requires the `@aigcs/edgeone` package.
+
+```bash
+# Build EdgeOne Makers bundle
+pnpm edgeone:build
+
+# Deploy to EdgeOne Makers
+# The output is in cloud-functions/
+```
+
+## Cloudflare Workers [WIP]
+
+<Callout type="warn">Cloudflare Workers deployment is planned but not yet implemented.</Callout>
+
+## Vercel [WIP]
+
+<Callout type="warn">Vercel deployment is planned but not yet implemented.</Callout>
+
+## One-Click Platforms
+
+### Railway
+
+[![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/template/aigcs)
+
+### Render
+
+```yaml
+# render.yaml
+services:
+  - type: web
+    name: aigcs
+    env: docker
+    repo: https://github.com/openaigcs/aigcs
+    envVars:
+      - key: JWT_SECRET
+        generateValue: true
+```
+
+## Upgrading
+
+### Docker
+
+```bash
+docker compose pull
+docker compose up -d
+```
+
+### Manual
+
+```bash
+git pull
+pnpm install
+pnpm build
+# Restart the server
+```

@@ -1,0 +1,113 @@
+---
+title: AI 提供商
+description: 配置 AI 提供商的完整指南
+---
+
+## 概述
+
+AIGCS 支持 14 个内置 AI 提供商以及任何兼容 OpenAI 的自定义提供商。
+提供商 API 密钥通过 AES-256-GCM **加密存储**。
+
+## 内置提供商
+
+### 原生 SDK 提供商
+
+#### OpenAI
+
+| 字段 | 值 |
+|-------|-------|
+| 类型键 | `openai` |
+| 认证 | Bearer Token（API 密钥） |
+| 默认模型 | `gpt-4o-mini` |
+| 端点 | `https://api.openai.com/v1` |
+
+```json
+{
+  "type": "openai",
+  "apiKey": "sk-...",
+  "model": "gpt-4o-mini",
+  "enabled": true
+}
+```
+
+#### Google Gemini
+
+| 字段 | 值 |
+|-------|-------|
+| 类型键 | `gemini` |
+| 认证 | API 密钥（URL 查询参数 `?key=`） |
+| 默认模型 | `gemini-2.0-flash` |
+| 端点 | `https://generativelanguage.googleapis.com/v1` |
+
+#### Anthropic Claude
+
+| 字段 | 值 |
+|-------|-------|
+| 类型键 | `claude` |
+| 认证 | `x-api-key` 请求头 |
+| 默认模型 | `claude-sonnet-4-20250514` |
+| 端点 | `https://api.anthropic.com/v1` |
+
+### OpenAI 兼容提供商
+
+这些提供商使用兼容 OpenAI 的 API 格式——使用相同设置配置，只需更改端点和模型名称。
+
+| 提供商 | 类型键 | 默认模型 | 端点 |
+|----------|----------|---------------|----------|
+| DeepSeek | `deepseek` | `deepseek-chat` | `https://api.deepseek.com` |
+| Qwen (千问) | `qwen` | `qwen-turbo` | `https://dashscope.aliyuncs.com/compatible-mode/v1` |
+| GLM (智谱) | `glm` | `glm-4-plus` | `https://open.bigmodel.cn/api/paas/v4` |
+| Hunyuan (混元) | `hunyuan` | `hunyuan-turbo` | `https://api.hunyuan.cloud.tencent.com/v1` |
+| Doubao (豆包) | `doubao` | `doubao-1.5-pro` | `https://ark.cn-beijing.volces.com/api/v3` |
+| MiniMax | `minimax` | `minimax-text-01` | `https://api.minimax.ai/v1` |
+| Kimi (月之暗面) | `kimi` | `kimi-latest` | `https://api.moonshot.cn/v1` |
+| Quark (夸克) | `quark` | `qwen-turbo` | `https://dashscope.aliyuncs.com/compatible-mode/v1` |
+| Grok (xAI) | `qrok` | `grok-2-latest` | `https://api.x.ai/v1` |
+
+### 本地提供商
+
+#### Ollama
+
+| 字段 | 值 |
+|-------|-------|
+| 类型键 | `ollama` |
+| 认证 | 无 |
+| 默认模型 | `llama3` |
+| 端点 | `http://localhost:11434/v1` |
+
+## 自定义提供商
+
+任何未知的类型键都会动态创建一个兼容 OpenAI 的提供商：
+
+```json
+{
+  "type": "custom-provider-name",
+  "apiKey": "sk-...",
+  "endpoint": "https://your-custom-endpoint/v1",
+  "model": "your-model",
+  "enabled": true
+}
+```
+
+## 提供商头像
+
+每个提供商都有一个内置的 SVG 头像。您也可以在管理面板中上传自定义 SVG 头像。
+
+## 测试提供商
+
+配置提供商后，点击**测试**以生成示例评论。这将验证：
+1. API 连接
+2. 身份验证
+3. 模型响应质量
+
+## API 密钥安全
+
+API 密钥遵循以下安全流程：
+
+```
+用户输入 → AES-256-GCM 加密 → 存储到数据库
+    ↓
+生成时 → 在内存中解密 → 发送到 API → 丢弃
+```
+
+加密密钥来自 `ENCRYPTION_KEY`（或回退到 `JWT_SECRET`）。

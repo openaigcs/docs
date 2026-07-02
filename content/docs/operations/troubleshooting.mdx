@@ -1,0 +1,99 @@
+---
+title: Troubleshooting
+description: Common issues and solutions
+---
+
+## Server Issues
+
+### Server won't start
+
+**Check:** `JWT_SECRET` is set.
+**Solution:** Generate a random secret and set it in `.env` or environment.
+
+### Database connection failed
+
+**Check:** `DATABASE_URL` format and database server is running.
+**Solution:**
+- SQLite: ensure `/app/data/` directory exists and is writable
+
+### Port already in use
+
+**Solution:** Change `PORT` environment variable or stop the conflicting process.
+
+### Permission denied (Docker)
+
+**Solution:** Use the provided `volumes` mapping and don't change the internal user.
+
+## AI Provider Issues
+
+### Provider test fails with timeout
+
+**Check:** API endpoint URL and network connectivity.
+**Solution:**
+- Verify the API key is correct
+- Check if the provider endpoint is accessible from your server
+- For Ollama, ensure it's running locally
+
+### "Model not found" error
+
+**Solution:** Update the model name. Check the provider's current model list via `listModels` API.
+
+### Comments not generating
+
+**Check:** Page cache status.
+**Solution:**
+- Ensure the page URL is accessible from the server
+- Check if content selectors match the page structure
+- Verify at least one provider is enabled and configured
+
+## Widget Issues
+
+### Widget not displaying
+
+**Check:** Browser console for errors.
+**Solution:**
+- Verify `domain` matches the site in admin panel
+- Ensure `server` URL is correct and accessible
+- Check CORS settings allow your domain
+
+### Widget shows 403
+
+**Solution:**
+- Site domain doesn't match the widget's domain
+- Check `ALLOWED_ORIGINS` configuration
+- If using a proxy, ensure Host header is forwarded
+
+### Theme not applying correctly
+
+**Solution:** Ensure the theme name is valid. See the [Widget themes](../guide/widget#theme-system) section.
+
+## SMTP Issues
+
+### Test email fails
+
+**Check:** SMTP settings and credentials.
+**Solution:**
+- Verify host, port, and authentication method
+- For Gmail, use an app password
+- Check if port 587 (STARTTLS) or 465 (SSL) is correct
+
+### Emails marked as spam
+
+**Solution:**
+- Configure SPF/DKIM/DMARC DNS records
+- Use a reputable SMTP provider (SendGrid, Mailgun, etc.)
+
+## CORS Issues
+
+### Requests blocked by CORS
+
+**Solution:**
+- Add your domain to `ALLOWED_ORIGINS`
+- Check browser console for the exact origin being blocked
+- Use `*` for development (not recommended in production)
+
+## Headers
+
+### X-Requested-With error
+
+**Solution:** All admin API requests must include the header `X-Requested-With: XMLHttpRequest`. The admin panel handles this automatically.

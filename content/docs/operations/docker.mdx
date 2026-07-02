@@ -1,0 +1,93 @@
+---
+title: Docker Operations
+description: Docker deployment and operations guide
+---
+
+## Prerequisites
+
+- Docker Engine >= 24.0
+- Docker Compose (optional, v2 recommended)
+
+## Production compose.yml
+
+```yaml
+services:
+  aigcs:
+    image: openaigcs/aigcs:latest
+    container_name: aigcs
+    restart: unless-stopped
+    ports:
+      - "41905:41905"
+    environment:
+      - JWT_SECRET=${JWT_SECRET}
+      - ENCRYPTION_KEY=${ENCRYPTION_KEY}
+      - DATABASE_URL=file:./data/aigcs.db
+      - NODE_ENV=production
+      - SMTP_HOST=${SMTP_HOST}
+      - SMTP_PORT=${SMTP_PORT}
+      - SMTP_USER=${SMTP_USER}
+      - SMTP_PASS=${SMTP_PASS}
+    volumes:
+      - ./data:/app/data
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "http://localhost:41905/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+```
+
+## Data Backup
+
+### SQLite
+
+```bash
+# Backup
+docker exec aigcs cp /app/data/aigcs.db /app/data/aigcs.db.backup
+
+# Or from outside
+docker cp aigcs:/app/data/aigcs.db ./backup/
+```
+
+## Restore
+
+### SQLite
+
+```bash
+docker cp ./backup/aigcs.db aigcs:/app/data/aigcs.db
+docker restart aigcs
+```
+
+## Version Upgrades
+
+```bash
+docker compose pull
+docker compose up -d
+```
+
+The database migration runs automatically on startup.
+
+## Logs
+
+```bash
+# Follow logs
+docker logs -f aigcs
+
+# Last 100 lines
+docker logs --tail 100 aigcs
+
+# With timestamps
+docker logs -t aigcs
+```
+
+## Resource Limits
+
+```yaml
+services:
+  aigcs:
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '1.0'
+```

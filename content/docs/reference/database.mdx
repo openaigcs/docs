@@ -1,0 +1,126 @@
+---
+title: Database Schema
+description: Database tables and relationships
+---
+
+## Overview
+
+AIGCS uses Drizzle ORM with SQLite as the database.
+
+## Tables
+
+### system_config
+
+Global system configuration (single row, `id = 'global'`).
+
+| Column | Type | Description |
+|--------|------|-------------|
+| id | text | Primary key (`'global'`) |
+| smtp_host | text | SMTP server |
+| smtp_port | integer | SMTP port |
+| smtp_user | text | SMTP username |
+| smtp_pass | text | Encrypted password |
+| jwt_secret | text | JWT signing key |
+| allowed_origins | text | CORS origins (JSON) |
+| registration_open | integer | 0/1 toggle |
+| site_title | text | Site title |
+| site_favicon | text | Favicon URL |
+
+### users
+
+User accounts.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| id | text | UUID |
+| email | text | Unique email |
+| username | text | Unique username |
+| display_name | text | Display name |
+| password_hash | text | Argon2id hash |
+| role | text | `admin` or `user` |
+| avatar | text | Avatar file extension |
+
+### api_tokens
+
+API access tokens.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| id | text | UUID |
+| user_id | text | Foreign key → users |
+| name | text | Token label |
+| token_hash | text | SHA-256 hash |
+| scope | text | `read`, `read_write`, or `admin` |
+| expires_at | text | Optional expiry |
+
+### sites
+
+Multi-tenant sites.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| id | text | UUID |
+| user_id | text | Foreign key → users |
+| domain | text | Site domain |
+| name | text | Site name |
+| settings | text | JSON blob |
+
+### providers
+
+AI provider configurations.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| id | text | UUID |
+| site_id | text | Foreign key → sites |
+| type | text | Provider type key |
+| api_key | text | Encrypted API key |
+| endpoint | text | API endpoint URL |
+| model | text | Model name |
+| enabled | integer | 0/1 |
+| sort_weight | integer | Display order |
+
+### comments
+
+AI-generated comments.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| id | text | UUID |
+| site_id | text | Foreign key → sites |
+| path | text | Page path |
+| author | text | AI provider name |
+| content | text | Sanitized HTML |
+| content_md5 | text | MD5 hash (dedup) |
+
+### page_cache
+
+Page content and generation status.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| id | text | UUID |
+| site_id | text | Foreign key → sites |
+| path | text | Page path (unique per site) |
+| status | text | `pending`, `generating`, `ready`, `failed` |
+| title | text | Page title |
+| etag | text | ETag for conditional fetch |
+
+### visitor_comments
+
+Visitor-submitted comments (Native Comments plugin).
+
+| Column | Type | Description |
+|--------|------|-------------|
+| id | text | UUID |
+| site_id | text | Foreign key → sites |
+| path | text | Page path |
+| parent_id | text | Reply parent (nullable) |
+| author | text | Display name |
+| email | text | Email address |
+| content | text | Comment text |
+| status | text | `pending`, `approved`, `spam` |
+
+### Full list (19 tables)
+
+The complete schema includes: `system_config`, `users`, `api_tokens`, `sites`, `providers`, `prompt_templates`, `comments`, `page_cache`, `visitor_comments`, `reaction_types`, `comment_reactions`, `reaction_votes`, `mastodon_bindings`, `mastodon_cached_comments`, `webhooks`, `plugins`, `audit_log`, `email_unsubscribes`, `verification_codes`.

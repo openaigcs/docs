@@ -1,0 +1,43 @@
+---
+title: 插件系统
+description: AIGCS 插件架构与生命周期
+---
+
+## 概述
+
+AIGCS 拥有一个包含 7 个生命周期钩子的插件系统。插件可以修改评论生成、处理访客评论、添加服务器路由等。
+
+## 插件接口
+
+```typescript
+interface Plugin {
+  name: string;
+  displayName?: Record<string, string>;  // i18n 显示名称
+  version: string;
+  description?: string;
+  homepage?: string;
+  defaultSettings?: Record<string, any>;
+  commentHandler?: 'none' | 'ai' | 'visitor' | 'both';
+  hooks: {
+    onServerInit?: (ctx: ServerContext) => void | Promise<void>;
+    beforeGenerate?: (ctx: PluginHookContext) => PluginHookContext;
+    afterGenerate?: (ctx: PluginHookContext) => PluginHookContext;
+    pageReady?: (ctx: PluginHookContext) => PluginHookContext;
+    beforeRender?: (ctx: PluginHookContext) => PluginHookContext;
+    onFetchComments?: (ctx: FetchContext) => FetchContext;
+    onCommentSubmit?: (ctx: SubmitContext) => SubmitContext;
+  };
+}
+```
+
+## 钩子执行顺序
+
+```
+1. onServerInit     — 插件启动，注册路由、定时器
+2. beforeGenerate   — 在 AI 生成前修改页面内容
+3. afterGenerate    — 生成后处理
+4. pageReady        — 所有提供程序完成页面处理
+5. onFetchComments  — 将访客/联邦宇宙评论添加到 widget 响应
+6. onCommentSubmit  — 处理访客评论提交
+7. beforeRender     — 渲染前转换
+```

@@ -1,0 +1,85 @@
+---
+title: Introduction
+description: What is AIGCS and how it works
+---
+
+## What is AIGCS?
+
+AIGCS：AI Generated Comments System.
+
+AIGCS (AI-Generated Comments System) is an open-source system where AI providers act as
+"commenters" on your website content. Instead of relying on human visitors to leave comments,
+AIGCS uses AI models (OpenAI, Gemini, Claude, and more) to automatically generate relevant,
+contextual comments for your pages.
+
+## Key Features
+
+- **AI-Powered Comments** — 14+ built-in AI providers, OpenAI-compatible custom providers
+- **Dual Comment System** — AI-generated comments + visitor-submitted comments (via plugins)
+- **Fediverse Integration** — Cross-post and sync comments with Mastodon and other ActivityPub platforms
+- **Beautiful Widget** — Shadow DOM Web Component with 20+ theme variants (giscus-compatible)
+- **Self-Hosted** — Docker, manual, or EdgeOne Makers deployment. Full control of your data
+- **Multi-Tenant** — Manage multiple sites from a single admin panel
+- **Plugin System** — Extensible hooks for custom comment handling, content processing, and more
+- **i18n** — Admin panel in Chinese and English, prompt templates in 8 languages
+- **Security First** — Argon2id passwords, AES-256-GCM encryption, CSRF/CORS/SSRF protection, 2FA/TOTP
+
+## Architecture
+
+AIGCS consists of four main components that work together:
+
+| Component | Description |
+|-----------|-------------|
+| **Core** (`@aigcs/core`) | Shared types, Drizzle ORM schema (19 tables), constants |
+| **Server** (`@aigcs/server`) | Hono HTTP API server, middleware, AI providers, plugin loader |
+| **Admin** (`@aigcs/admin`) | React SPA management panel (TanStack Router + Kumo UI) |
+| **Widget** (`@aigcs/widget`) | Web Component for displaying comments (Shadow DOM, zero deps) |
+
+## How It Works
+
+```
+Visitor visits page  →  Widget loads via <script>
+        ↓
+Widget fetches comments from your AIGCS Server
+        ↓
+Server checks page cache:
+  ├─ Cached: return existing AI comments immediately
+  └─ Not cached: fetch page content → send to AI providers → generate → cache
+        ↓
+Comments displayed in the Widget (CDN-cached with ETag)
+```
+
+## Comparison with Other Systems
+
+| Feature | AIGCS | giscus | twikoo | waline | artalk |
+|---------|-------|--------|--------|--------|--------|
+| Comments source | AI + visitors | GitHub Discussions | Visitors | Visitors | Visitors |
+| Self-hosted | ✅ | ✅ (with GH token) | ✅ | ✅ | ✅ |
+| AI-generated | ✅ | ❌ | ❌ | ❌ | ❌ |
+| Fediverse | ✅ | ❌ | ❌ | ❌ | ❌ |
+| Multi-tenant | ✅ | ❌ | ❌ | ❌ | ❌ |
+| Plugin system | ✅ | ❌ | ❌ | ❌ | ❌ |
+| Shadow DOM | ✅ | ✅ (iframe) | ❌ | ❌ | ❌ |
+| Themes | 20+ (giscus compatible) | 16 | Limited | Limited | Limited |
+| Database | SQLite | GitHub API | MongoDB/QLite | LeanCloud/MySQL/PG | SQLite/MySQL/PG |
+| 2FA | ✅ | GitHub OAuth | ❌ | ❌ | ❌ |
+
+## System Requirements
+
+- **Node.js** >= 24.0.0
+- **pnpm** >= 9.0.0 (for manual deployment)
+- **Docker** (recommended for production)
+- **RAM** >= 512MB (1GB+ recommended for multiple AI providers)
+- **Storage** >= 100MB for the application + database growth
+
+## Tech Stack
+
+| Layer | Technology |
+|-------|-----------|
+| Backend | Hono v4 (TypeScript) |
+| Database ORM | Drizzle ORM v0.45 |
+| Database | SQLite |
+| Admin Panel | React 19, TanStack Router, Kumo UI, Tailwind CSS |
+| Widget | Native Web Component, Shadow DOM |
+| Build | Turborepo, esbuild |
+| Deployment | Docker, EdgeOne Makers [WIP], Cloudflare Workers [WIP], Vercel [WIP] |

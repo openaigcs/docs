@@ -1,0 +1,192 @@
+---
+title: Widget Embedding
+description: How to embed the AIGCS comment widget on your website
+---
+
+## Overview
+
+The AIGCS widget is a native JavaScript Web Component with Shadow DOM isolation —
+zero framework dependencies, compatible with any website.
+
+## Quick Embed
+
+### Option 1: Container Element (Auto-detect)
+
+```html
+<div id="aigcs"
+  data-domain="blog.example.com"
+  data-path="/post/hello-world"
+  data-server="https://comments.example.com"
+  data-auto-generate="true">
+</div>
+<script src="https://comments.example.com/widget.js" defer></script>
+```
+
+### Option 2: Custom Element
+
+```html
+<aigcs-widget
+  domain="blog.example.com"
+  path="/post/hello-world"
+  server="https://comments.example.com"
+  theme="auto"
+  lang="zh">
+</aigcs-widget>
+<script src="https://comments.example.com/widget.js" defer></script>
+```
+
+### Option 3: JavaScript API
+
+```html
+<div id="my-comments"></div>
+<script>
+  AIGCS.init({
+    el: '#my-comments',
+    site: 'blog.example.com',
+    path: '/post/hello-world',
+    server: 'https://comments.example.com',
+    lang: 'en',
+    theme: 'auto',
+    autoGenerate: false,
+    commentLimit: 0,
+    maxReactions: 5,
+  });
+</script>
+```
+
+## HTML Attributes Reference
+
+| Attribute | Default | Description |
+|-----------|---------|-------------|
+| `domain` | `location.hostname` | Site domain registered in AIGCS |
+| `path` | `location.pathname` | Page path for comment lookup |
+| `server` | (same origin) | AIGCS server URL |
+| `theme` | `auto` | Color mode (`auto`/`light`/`dark`) |
+| `light-theme` | `light` | Light theme variant name |
+| `dark-theme` | `dark_dimmed` | Dark theme variant name |
+| `lang` | auto-detect | Language (`zh`/`en`) |
+| `auto-generate` | `false` | Auto-trigger AI generation (`true`/`false`) |
+| `hide-title` | `false` | Hide the comment section title |
+| `disable-copyright` | `false` | Hide "Powered by AIGCS" |
+| `comment-limit` | `0` | Max comments to display (0 = unlimited) |
+| `max-reactions` | `5` | Visible reactions before folding |
+
+## JavaScript API Reference
+
+### `AIGCS.init(options)`
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `el` | `string \| HTMLElement` | — | Mount element selector or node |
+| `site` | `string` | — | Site domain (required) |
+| `path` | `string` | `location.pathname` | Page path |
+| `server` | `string` | (same origin) | Server URL |
+| `lang` | `'zh' \| 'en'` | auto-detect | Language |
+| `theme` | `'auto' \| 'light' \| 'dark'` | `'auto'` | Color mode |
+| `lightTheme` | `string` | `'light'` | Light theme variant |
+| `darkTheme` | `string` | `'dark_dimmed'` | Dark theme variant |
+| `autoGenerate` | `boolean` | `false` | Auto-trigger AI generation |
+| `commentLimit` | `number` | `0` | Max comments (0 = unlimited) |
+| `maxReactions` | `number` | `5` | Visible reactions before fold |
+
+## Theme System
+
+### Light Themes
+
+| Name | Description |
+|------|-------------|
+| `light` | Default light |
+| `light_high_contrast` | High contrast light |
+| `light_protanopia` | Accessible (protanopia) |
+| `light_tritanopia` | Accessible (tritanopia) |
+| `noborder_light` | Light without borders |
+| `catppuccin_latte` | Catppuccin Latte |
+| `gruvbox_light` | Gruvbox light |
+| `fro` | Fro theme |
+
+### Dark Themes
+
+| Name | Description |
+|------|-------------|
+| `dark_dimmed` / `dimmed` | Default dimmed dark |
+| `dark` | Full dark |
+| `dark_high_contrast` | High contrast dark |
+| `dark_protanopia` | Accessible (protanopia) |
+| `dark_tritanopia` | Accessible (tritanopia) |
+| `transparent_dark` | Transparent dark |
+| `noborder_dark` | Dark without borders |
+| `noborder_gray` | Gray without borders |
+| `cobalt` | RStudio Cobalt |
+| `purple_dark` | Purple dark |
+| `gruvbox` | Gruvbox |
+| `gruvbox_dark` | Gruvbox dark |
+| `catppuccin_frappe` | Catppuccin Frappé |
+| `catppuccin_macchiato` | Catppuccin Macchiato |
+| `catppuccin_mocha` | Catppuccin Mocha |
+
+## Avatar Cache Modes
+
+Configure in Site Settings under `avatarMode`:
+
+| Mode | Description |
+|------|-------------|
+| `aigcs` | AIGCS proxies and caches avatars locally (WebP, 10K limit) |
+| `mravatar` | Use Mravatar external service |
+| `off` | No avatar proxy |
+
+## Framework Integration
+
+### React
+
+```tsx
+import { useEffect, useRef } from 'react';
+
+function AIGCSWidget({ domain, path }: { domain: string; path: string }) {
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const script = document.createElement('script');
+    script.src = 'https://comments.example.com/widget.js';
+    script.defer = true;
+    ref.current?.appendChild(script);
+
+    return () => { script.remove(); };
+  }, []);
+
+  return (
+    <div
+      ref={ref}
+      id="aigcs"
+      data-domain={domain}
+      data-path={path}
+    />
+  );
+}
+```
+
+### Vue
+
+```vue
+<template>
+  <div id="aigcs" :data-domain="domain" :data-path="path" />
+</template>
+
+<script setup>
+import { onMounted } from 'vue';
+const props = defineProps({ domain: String, path: String });
+
+onMounted(() => {
+  const script = document.createElement('script');
+  script.src = 'https://comments.example.com/widget.js';
+  script.defer = true;
+  document.body.appendChild(script);
+});
+</script>
+```
+
+## Performance
+
+- **Shadow DOM** — complete style isolation, no CSS conflicts
+- **ETag** — conditional requests with 304 support
+- **CDN Cache** — `Cache-Control: public, s-maxage=300, stale-while-revalidate=86400`
+- **Lazy Loading** — defer loading until widget is in viewport

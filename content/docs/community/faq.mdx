@@ -1,0 +1,57 @@
+---
+title: FAQ
+description: Frequently asked questions
+---
+
+## General
+
+### What kind of comments does AIGCS generate?
+
+AI-generated comments are contextual reactions to your page content. They can be
+insightful questions, observations, or analysis depending on the prompt template.
+
+### Is AIGCS free?
+
+AIGCS is open-source (MIT license) and free to self-host. You pay only for:
+- AI provider API usage (e.g., OpenAI tokens)
+- Server hosting (VPS, Docker host, etc.)
+
+### Can I use AIGCS without AI providers?
+
+Yes. With the Native Comments plugin enabled, AIGCS functions as a traditional visitor comment
+system. You can also use it solely for Fediverse comment aggregation.
+
+## Technical
+
+### What database should I use?
+
+**SQLite** is recommended for small to medium sites (< 100K monthly visitors).
+
+### Can I use multiple AI providers at once?
+
+Yes. All enabled providers generate comments in parallel for each page.
+
+### Does AIGCS support SSO / OAuth login?
+
+Not currently. Admin panel uses JWT-based authentication with optional TOTP 2FA.
+
+### Can I customize the widget appearance?
+
+Yes. Choose from 20+ built-in themes or create custom CSS (Shadow DOM isolates styles).
+
+## Deployment
+
+### What are the minimum requirements?
+
+- 512MB RAM (1GB+ recommended)
+- Node.js 24+ (Docker image includes it)
+- 100MB disk for the app + database storage
+
+### Can I deploy on a shared hosting plan?
+
+No. AIGCS requires Node.js runtime and persistent storage. Use a VPS or Docker host.
+
+### Does AIGCS work with static site generators?
+
+Yes. The widget is client-side JavaScript. It works with any static site (Hugo, Jekyll,
+Astro, 11ty, etc.) and dynamic frameworks (Next.js, Nuxt, WordPress, etc.).

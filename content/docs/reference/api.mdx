@@ -1,0 +1,175 @@
+---
+title: API Reference
+description: Complete API endpoint reference
+---
+
+## Overview
+
+All API endpoints return JSON responses.
+
+### Base URL
+
+```
+http://your-server:41905/api
+```
+
+### Response Format
+
+```json
+{
+  "code": 200,
+  "data": { ... }
+}
+```
+
+Error responses:
+
+```json
+{
+  "code": 401,
+  "message": "Unauthorized"
+}
+```
+
+### Authentication
+
+| Method | Header |
+|--------|--------|
+| JWT | `Authorization: Bearer <token>` |
+| API Token | `Authorization: Bearer <token>` |
+| CSRF (admin) | `X-Requested-With: XMLHttpRequest` |
+
+## Public Endpoints
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/api/health` | Health check → `{ status: 200 }` |
+| GET | `/widget.js` | Widget JS bundle |
+| GET | `/api/avatar-proxy?url=` | Proxy and cache external avatars |
+
+## Auth Endpoints (`/api/auth`)
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| POST | `/register` | — | Register new user |
+| POST | `/login` | — | Login by email or username |
+| POST | `/totp/verify` | — | Complete TOTP step-up |
+| GET | `/me` | Bearer | Get current user profile |
+| PUT | `/me` | Bearer | Update profile |
+| POST | `/change-password` | Bearer | Change password |
+| POST | `/refresh` | — | Refresh access token |
+| POST | `/avatar` | Bearer | Upload avatar (max 2MB) |
+| DELETE | `/avatar` | Bearer | Remove avatar |
+| GET | `/avatar/:userId` | — | Serve avatar image |
+| POST | `/totp/setup` | Bearer | Generate TOTP secret + QR |
+| POST | `/totp/enable` | Bearer | Enable TOTP |
+| POST | `/totp/disable` | Bearer | Disable TOTP |
+
+## Widget Endpoints (`/api/widget`)
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/:domain/comments?path=` | Get page comments |
+| POST | `/:domain/react` | Toggle reaction |
+| POST | `/:domain/comment` | Submit visitor comment |
+| PUT | `/:domain/comment/:id` | Edit visitor comment |
+| DELETE | `/:domain/comment/:id` | Delete visitor comment |
+| POST | `/:domain/comment/:id/request-delete` | Request deletion code |
+| POST | `/:domain/comment/:id/verify-delete` | Verify and delete |
+| POST | `/:domain/ping/:type/:token` | Ping webhook receiver |
+
+## Admin Endpoints (`/api/admin`)
+
+All require `Authorization: Bearer <token>` + `X-Requested-With: XMLHttpRequest`.
+
+### Sites
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/sites` | List user's sites |
+| POST | `/sites` | Create site |
+| GET | `/sites/:id` | Get site |
+| PUT | `/sites/:id` | Update site |
+| DELETE | `/sites/:id` | Delete site |
+
+### Providers
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/sites/:siteId/providers` | List providers |
+| POST | `/sites/:siteId/providers` | Create provider |
+| PATCH | `/sites/:siteId/providers/:id` | Update provider |
+| DELETE | `/sites/:siteId/providers/:id` | Delete provider |
+| POST | `/sites/:siteId/providers/:id/test` | Test provider |
+| GET | `/builtin-providers` | List built-in providers |
+| GET | `/provider-defaults` | Get provider defaults |
+| PUT | `/provider-defaults` | Save provider default |
+
+### Cache & Comments
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/sites/:siteId/cache` | List page cache |
+| POST | `/sites/:siteId/cache/clear` | Clear cache |
+| POST | `/sites/:siteId/cache/warm` | Warm cache |
+| POST | `/sites/:siteId/cache/generate` | Generate comments |
+| GET | `/sites/:siteId/comments` | List comments |
+
+### Prompts
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/prompts` | List prompt templates |
+| POST | `/prompts` | Create prompt |
+| DELETE | `/prompts/:id` | Delete prompt |
+| POST | `/prompts/import` | Import from GitHub URL |
+
+### Webhooks
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/sites/:siteId/webhooks` | List webhooks |
+| POST | `/sites/:siteId/webhooks` | Create webhook |
+| PATCH | `/sites/:siteId/webhooks/:id` | Update webhook |
+| DELETE | `/sites/:siteId/webhooks/:id` | Delete webhook |
+
+### Plugins
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/plugins` | List all plugins |
+| POST | `/plugins/:name/toggle` | Toggle plugin |
+| DELETE | `/plugins/:name` | Uninstall plugin |
+
+### System
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| GET | `/system/config` | Admin | Get system config |
+| PUT | `/system/config` | Admin | Update system config |
+| POST | `/system/smtp-test` | Admin | Send test email |
+| GET | `/dashboard/stats` | Bearer | Dashboard statistics |
+| GET | `/audit-log` | Bearer | Audit log |
+| GET | `/export` | Bearer | Export JSON data |
+
+## Mastodon Plugin Endpoints
+
+These are registered dynamically by the Mastodon plugin:
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `.../mastodon/bindings` | List bindings |
+| POST | `.../mastodon/bindings` | Create binding |
+| DELETE | `.../mastodon/bindings/:id` | Delete binding |
+| POST | `.../mastodon/bindings/:id/refresh` | Refresh comments |
+| POST | `.../mastodon/test-connection` | Test instance |
+| POST | `.../mastodon/oauth/start` | Start OAuth flow |
+| POST | `.../mastodon/publish` | Post a toot and bind |
+| GET | `.../mastodon/config` | Get fedi config |
+| PUT | `.../mastodon/config` | Update fedi config |
+
+## Unsubscribe
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/api/unsubscribe?email=&ctx=&token=` | Toggle unsubscribe |

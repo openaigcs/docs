@@ -1,0 +1,82 @@
+---
+title: 简介
+description: 什么是 AIGCS 及其工作原理
+---
+
+## 什么是 AIGCS？
+
+AIGCS：AI Generated Comments System.
+
+AIGCS（AI 生成评论系统）是一个开源系统，AI 提供商作为您网站内容的"评论者"。AIGCS 不依赖人类访客留下评论，而是使用 AI 模型（OpenAI、Gemini、Claude 等）自动为您的页面生成相关且有上下文的评论。
+
+## 主要特性
+
+- **AI 驱动评论** — 14+ 内置 AI 提供商，兼容 OpenAI 的自定义提供商
+- **双评论系统** — AI 生成评论 + 访客提交评论（通过插件）
+- **联邦宇宙集成** — 与 Mastodon 及其他 ActivityPub 平台交叉发布和同步评论
+- **精美 Widget** — Shadow DOM Web 组件，20+ 主题变体（兼容 giscus）
+- **自托管** — Docker、手动或 EdgeOne Makers 部署，完全掌控您的数据
+- **多站点** — 从单个管理面板管理多个站点
+- **插件系统** — 可扩展钩子，用于自定义评论处理、内容处理等
+- **国际化** — 管理面板支持中文和英文，提示模板支持 8 种语言
+- **安全优先** — Argonid 密码、AES-256-GCM 加密、CSRF/CORS/SSRF 保护、2FA/TOTP
+
+## 架构
+
+AIGCS 由四个主要组件协同工作：
+
+| 组件 | 描述 |
+|-----------|-------------|
+| **Core** (`@aigcs/core`) | 共享类型、Drizzle ORM 模式（19 张表）、常量 |
+| **Server** (`@aigcs/server`) | Hono HTTP API 服务器、中间件、AI 提供商、插件加载器 |
+| **Admin** (`@aigcs/admin`) | React SPA 管理面板（TanStack Router + Kumo UI） |
+| **Widget** (`@aigcs/widget`) | 用于显示评论的 Web 组件（Shadow DOM，零依赖） |
+
+## 工作原理
+
+```
+访客访问页面  →  Widget 通过 <script> 加载
+        ↓
+Widget 从您的 AIGCS 服务器获取评论
+        ↓
+服务器检查页面缓存：
+  ├─ 已缓存：立即返回现有 AI 评论
+  └─ 未缓存：获取页面内容 → 发送给 AI 提供商 → 生成 → 缓存
+        ↓
+评论显示在 Widget 中（CDN 缓存 + ETag）
+```
+
+## 与其他系统对比
+
+| 特性 | AIGCS | giscus | twikoo | waline | artalk |
+|---------|-------|--------|--------|--------|--------|
+| 评论来源 | AI + 访客 | GitHub Discussions | 访客 | 访客 | 访客 |
+| 自托管 | ✅ | ✅ (需 GH Token) | ✅ | ✅ | ✅ |
+| AI 生成 | ✅ | ❌ | ❌ | ❌ | ❌ |
+| 联邦宇宙 | ✅ | ❌ | ❌ | ❌ | ❌ |
+| 多站点 | ✅ | ❌ | ❌ | ❌ | ❌ |
+| 插件系统 | ✅ | ❌ | ❌ | ❌ | ❌ |
+| Shadow DOM | ✅ | ✅ (iframe) | ❌ | ❌ | ❌ |
+| 主题 | 20+ (兼容 giscus) | 16 | 有限 | 有限 | 有限 |
+| 数据库 | SQLite | GitHub API | MongoDB/QLite | LeanCloud/MySQL/PG | SQLite/MySQL/PG |
+| 双因素认证 | ✅ | GitHub OAuth | ❌ | ❌ | ❌ |
+
+## 系统要求
+
+- **Node.js** >= 24.0.0
+- **pnpm** >= 9.0.0（手动部署）
+- **Docker**（推荐用于生产环境）
+- **内存** >= 512MB（多个 AI 提供商建议 1GB+）
+- **存储** >= 100MB（应用 + 数据库增长）
+
+## 技术栈
+
+| 层 | 技术 |
+|-------|-----------|
+| 后端 | Hono v4 (TypeScript) |
+| 数据库 ORM | Drizzle ORM v0.45 |
+| 数据库 | SQLite |
+| 管理面板 | React 19、TanStack Router、Kumo UI、Tailwind CSS |
+| Widget | 原生 Web 组件、Shadow DOM |
+| 构建 | Turborepo、esbuild |
+| 部署 | Docker、EdgeOne Makers [WIP]、Cloudflare Workers [WIP]、Vercel [WIP] |

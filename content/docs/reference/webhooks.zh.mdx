@@ -1,0 +1,165 @@
+---
+title: Webhooks
+description: Webhook 事件参考
+---
+
+## 概述
+
+Webhooks 在事件发生时向外部服务发送实时通知。
+
+### 端点
+
+```
+POST <您的-webhook-url>
+```
+
+### 请求头
+
+| 请求头 | 描述 |
+|--------|-------------|
+| `Content-Type` | `application/json` |
+| `X-AIGCS-Signature` | HMAC-SHA256 签名（如果配置了密钥） |
+
+### 消息体格式
+
+```json
+{
+  "event": "comment.generated",
+  "site_id": "site_uuid",
+  "data": { ... },
+  "timestamp": "2026-07-01T12:00:00Z"
+}
+```
+
+## 事件
+
+### `comment.generated`
+
+当 AI 评论为页面生成时触发。
+
+```json
+{
+  "event": "comment.generated",
+  "site_id": "uuid",
+  "data": {
+    "path": "/blog/post",
+    "pageTitle": "My Blog Post",
+    "commentCount": 5
+  }
+}
+```
+
+### `comment.reacted`
+
+当访客添加或移除反应时触发。
+
+```json
+{
+  "event": "comment.reacted",
+  "site_id": "uuid",
+  "data": {
+    "path": "/blog/post",
+    "emoji": "👍",
+    "action": "add"
+  }
+}
+```
+
+### `cache.cleared`
+
+当页面缓存被清除时触发。
+
+```json
+{
+  "event": "cache.cleared",
+  "site_id": "uuid",
+  "data": {
+    "paths": ["/blog/post"],
+    "count": 1
+  }
+}
+```
+
+### `cache.warm_completed`
+
+当缓存预热批次完成时触发。
+
+```json
+{
+  "event": "cache.warm_completed",
+  "site_id": "uuid",
+  "data": {
+    "total": 50,
+    "success": 48,
+    "failed": 2
+  }
+}
+```
+
+### `rss.import_completed`
+
+当 RSS 导入完成时触发。
+
+```json
+{
+  "event": "rss.import_completed",
+  "site_id": "uuid",
+  "data": {
+    "source": "https://blog.example.com/feed.xml",
+    "imported": 10
+  }
+}
+```
+
+### `provider.created` / `provider.updated`
+
+当 AI 提供商被创建或更新时触发。
+
+```json
+{
+  "event": "provider.created",
+  "site_id": "uuid",
+  "data": {
+    "type": "openai",
+    "model": "gpt-4o-mini"
+  }
+}
+```
+
+### 通配符：`*`
+
+订阅所有事件。
+
+## HMAC 签名验证
+
+如果 webhook 有密钥，每个请求将包含 `X-AIGCS-Signature`。
+
+### 验证（Node.js）
+
+```javascript
+const crypto = require('crypto');
+
+function verifyWebhook(body, signature, secret) {
+  const hmac = crypto.createHmac('sha256', secret);
+  hmac.update(JSON.stringify(body));
+  const expected = `sha256=${hmac.digest('hex')}`;
+  return crypto.timingSafeEqual(
+    Buffer.from(expected),
+    Buffer.from(signature)
+  );
+}
+```
+
+## Ping Webhooks
+
+外部系统可以通过签名的 ping URL 触发 AIGCS 操作：
+
+```
+POST /api/widget/:domain/ping/rss/:token
+POST /api/widget/:domain/ping/cache/:token
+```
+
+| 端点 | 操作 |
+|----------|--------|
+| `/ping/rss/:token` | 触发 RSS 获取（可选 `?slug=` 用于单条） |
+| `/ping/cache/:token` | 触发缓存预热 |

@@ -1,0 +1,168 @@
+---
+title: Quick Start
+description: Deploy AIGCS in 5 minutes with Docker
+---
+
+## Prerequisites
+
+- [Docker](https://docs.docker.com/get-docker/) installed on your machine
+- An **OpenAI API key** (or any other AI provider key)
+- A website where you want to display comments
+
+## Step 1: Start AIGCS
+
+> See [Installation](#installation) for more deployment options.
+
+Create `compose.yml`:
+
+```yaml
+services:
+  aigcs:
+    image: openaigcs/aigcs:latest
+    container_name: aigcs
+    ports:
+      - "41905:41905"
+    environment:
+      - JWT_SECRET=<change-this>
+      - ENCRYPTION_KEY=<change-this>
+      - NODE_ENV=production
+    volumes:
+      - ./data:/app/data
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "http://localhost:41905/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+```
+
+```bash
+docker compose up -d
+```
+
+> The server runs on port **41905** (leetspeak: aigcs = 41905).
+
+## Step 2: Access Admin Panel
+
+Open `http://YOUR_IP:41905/` in your browser, or via a reverse proxy domain: `https://aigcs.example.com/`.
+
+1. **Register** your admin account
+2. **Create a Site** with your domain name (e.g., `blog.example.com`)
+3. Your management dashboard is ready
+
+## Step 3: Add an AI Provider
+
+Navigate to the site dashboard → **Providers** → **Add Provider**.
+
+Select **OpenAI** from the list:
+
+| Field | Value |
+|-------|-------|
+| Type | `openai` |
+| API Key | `sk-...` (your OpenAI key) |
+| Model | `gpt-4o-mini` |
+| Enabled | ✅ |
+
+Click **Save** and then **Test** to verify the connection.
+
+## Step 4: Generate Your First Comment
+
+Navigate to **Cache** → enter your blog post URL → click **Fetch & Generate**.
+
+After a few seconds, the page status should change to `ready`.
+
+## Step 5: Embed the Widget
+
+### Basic Usage
+
+```html
+<div id="aigcs">Comments</div>
+<script src="https://cdn.jsdelivr.net/npm/@aigcs/widget@1/dist/aigcs.js"></script>
+<script>
+AIGCS.init({
+  el: '#aigcs',
+  site: 'your-blog.com',
+  path: '/post/hello',
+  server: 'https://comments.example.com',
+})
+</script>
+```
+
+### JS API Full Parameters
+
+```typescript
+AIGCS.init({
+  el?:        string | HTMLElement   // Mount element selector or DOM (default '#aigcs')
+  site:       string                 // Required. Site domain (must match the domain added in admin)
+  path:       string                 // Page path (default location.pathname)
+  server?:    string                 // AIGCS server address (default same domain)
+  lang?:      'zh' | 'en' | 'zh-hans' | 'zh-hant'   // Language (default browser auto-detect)
+  theme?:     'auto' | 'light' | 'dark'              // Color mode (default 'auto')
+  lightTheme?:  string              // Light theme variant (default 'light')
+  darkTheme?:   string              // Dark theme variant (default 'dark_dimmed')
+  autoGenerate?: boolean            // Auto-trigger AI generation (default false)
+  disableCopyright?: boolean        // Hide "Powered by AIGCS" footer (default false)
+  themeColor?: string               // Theme color inversion, 'inverted' (experimental)
+})
+```
+
+### HTML Attributes Reference
+
+Set attributes directly on the `<aigcs-widget>` tag instead of using the JS API:
+
+```html
+<aigcs-widget
+  domain="blog.example.com"
+  path="/your-post-slug"
+  server="https://comments.example.com"
+  auto-generate="true">
+</aigcs-widget>
+<script src="https://cdn.jsdelivr.net/npm/@aigcs/widget@1/dist/aigcs.js" defer></script>
+```
+
+| Attribute | JS Parameter | Default | Description |
+|-----------|-------------|---------|-------------|
+| `domain` | `site` | `location.hostname` | Site domain |
+| `path` | `path` | `location.pathname` | Page path |
+| `server` | `server` | — | Server address |
+| `theme` | `theme` | `auto` | Color mode |
+| `light-theme` | `lightTheme` | `light` | Light theme |
+| `dark-theme` | `darkTheme` | `dark_dimmed` | Dark theme |
+| `lang` | `lang` | auto-detect | Language |
+| `auto-generate` | `autoGenerate` | `false` | Set to `true` to enable auto-generation |
+| `disable-copyright` | `disableCopyright` | `false` | Set to `true` to hide copyright |
+| `hide-title` | — | `false` | Set to `true` to hide the "Comments" title |
+| `comment-limit` | — | `0` | Limit displayed comments (0 = unlimited) |
+
+### Theme Variants
+
+| Light (`lightTheme`) | Dark (`darkTheme`) |
+|---------------------|--------------------|
+| `light` | `dark_dimmed` / `dimmed` |
+| `light_high_contrast` | `dark` |
+| `light_protanopia` | `dark_high_contrast` |
+| `light_tritanopia` | `dark_protanopia` |
+| `noborder_light` | `dark_tritanopia` |
+| `catppuccin_latte` | `transparent_dark` |
+| `gruvbox_light` | `noborder_dark` |
+| `fro` | `noborder_gray` |
+| | `cobalt` |
+| | `purple_dark` |
+| | `gruvbox` |
+| | `gruvbox_dark` |
+| | `catppuccin_frappe` |
+| | `catppuccin_macchiato` |
+| | `catppuccin_mocha` |
+
+The Widget uses Shadow DOM for style isolation from the host page. Comment content is sanitized server-side via DOMPurify + `textContent` insertion to prevent XSS.
+
+## Step 6: Verify
+
+Reload your blog post page. You should see AI-generated comments displayed in the widget.
+
+## Next Steps
+
+- Secure your production deployment with the [Production Checklist](../operations/production-checklist)
+- Configure more [AI Providers](../guide/ai-providers)
+- Customize the [Widget](../guide/widget) theme
+- Enable [Visitor Comments](../plugins/native) via the Native Comments plugin
+- Sync comments with the [Fediverse](../plugins/fediverse) via the Fediverse Comments plugin

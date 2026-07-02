@@ -1,0 +1,61 @@
+---
+title: Fediverse Plugin
+description: Sync comments with ActivityPub platforms
+---
+
+The **Mastodon** plugin syncs comments between your AIGCS site and ActivityPub platforms.
+
+## Supported Platforms
+
+| Platform | Protocol Notes |
+|----------|---------------|
+| Mastodon | Full OAuth + API |
+| GoToSocial | Mastodon-compatible API |
+| Pleroma / Akkoma | Mastodon-compatible API |
+| Misskey / Sharkey / Firefish | Misskey-compatible API |
+| Loops | Mastodon API |
+| WriteFreely | ActivityPub |
+
+## Setup
+
+1. **Add Instance** — enter your Mastodon instance URL
+2. **OAuth Authorization** — authorize AIGCS to access your account (popup flow)
+3. **Bind a Status** — link a Mastodon post to a page path on your site
+
+## Binding
+
+A binding connects a Mastodon status to a page on your site:
+
+```
+Mastodon post: https://mastodon.social/@user/12345
+       ↓ bind
+Site page: /blog/my-article
+```
+
+Bindings can be:
+- Created manually in the admin panel
+- Auto-created when publishing a toot from the admin
+- Synced from search results
+
+## Fetching Comments
+
+Once bound, AIGCS can automatically fetch and cache replies to the Mastodon status:
+
+| Setting | Description |
+|---------|-------------|
+| `autoFetch` | Automatically fetch new replies |
+| `cacheTtl` | Cache duration in minutes |
+
+Fetched fediverse comments are injected into the widget alongside AI-generated comments.
+
+## Splitting Domain and Account
+
+The plugin supports split-domain configurations where the OAuth instance differs from the account's home instance.
+
+## Avatar Mode
+
+| Mode | Description |
+|------|-------------|
+| `aigcs` | AIGCS proxies and caches avatars |
+| `mravatar` | External Mravatar service |
+| `off` | No avatar proxy |

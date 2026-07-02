@@ -1,0 +1,38 @@
+---
+title: EdgeOne Makers [WIP]
+description: Deploying AIGCS on EdgeOne Makers
+---
+
+<Callout type="warn">This page is a work in progress. EdgeOne Makers deployment is planned but not yet implemented.</Callout>
+
+## Overview
+
+AIGCS supports deployment on Tencent EdgeOne Makers via Cloud Functions.
+
+## Build
+
+```bash
+# From the project root
+pnpm edgeone:build
+```
+
+Output is in `cloud-functions/` directory.
+
+## Configuration
+
+The `edgeone.json` configures the Cloud Function:
+
+```json
+{
+  "runtime": "nodejs20",
+  "handler": "index.handler",
+  "memory": 256,
+  "timeout": 30
+}
+```
+
+## Limitations
+
+- EdgeOne Makers Cloud Functions have cold start latency
+- File storage (avatar cache) may require external object storage
+- Database must be accessible from EdgeOne Makers network

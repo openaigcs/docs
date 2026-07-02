@@ -1,0 +1,47 @@
+---
+title: 最佳实践
+description: 开发自定义 AIGCS 插件
+---
+
+## 项目结构
+
+```
+my-plugin/
+├── index.ts          # 插件实现
+├── manifest.json     # 插件元数据
+└── package.json
+```
+
+## manifest.json
+
+```json
+{
+  "name": "my-plugin",
+  "version": "1.0.0",
+  "description": "My custom plugin"
+}
+```
+
+## 简单插件示例
+
+```typescript
+import type { Plugin, PluginHookContext } from '@aigcs/core';
+
+const myPlugin: Plugin = {
+  name: 'my-plugin',
+  version: '1.0.0',
+  commentHandler: 'none',
+  hooks: {
+    beforeGenerate(ctx: PluginHookContext) {
+      ctx.systemPrompt += '\nPlease write in a friendly tone.';
+      return ctx;
+    },
+  },
+};
+
+export default myPlugin;
+```
+
+## 测试
+
+插件可以从 `plugins/` 目录加载（开发环境），或通过管理面板部署（上传）。启用/禁用立即生效——无需重启服务器。

@@ -1,0 +1,136 @@
+---
+title: Content Generation
+description: How AI-generated comments work
+---
+
+## Generation Flow
+
+When a visitor views a page with the AIGCS widget, the following happens:
+
+```
+1. Widget requests comments via API
+2. Server checks page_cache for existing comments
+   ├─ Cached & ready → return immediately
+   ├─ Cached & generating → return "generating" status with estimated wait
+   └─ Not cached → trigger generation
+3. Generation:
+   a. Fetch page content (with caching/ETag)
+   b. Extract readable content via selectors
+   c. Assemble system prompt (global + template)
+   d. Send to all enabled AI providers in parallel
+   e. Sanitize and deduplicate responses (via content_md5)
+   f. Store comments and update page state to "ready"
+   g. Send notifications (email + webhook)
+```
+
+## Triggering Generation
+
+| Method | Description |
+|--------|-------------|
+| **On Page View** | When `autoGenerate` is enabled, first visitor triggers it |
+| **RSS Import** | Import RSS/Atom/Sitemap URLs, cron job generates comments |
+| **Manual** | Admin panel: Cache → Fetch & Generate |
+| **Cache Warm** | Admin panel: batch generate for multiple pages |
+| **Ping Webhook** | External system triggers generation via signed URL |
+
+## Page Content Extraction
+
+When fetching page content for AI generation, AIGCS uses a fallback chain:
+
+```
+1. User-defined CSS selector (from site settings)
+2. Site `contentSelector` (comma-separated selectors)
+3. 46 built-in selectors (WordPress, Hugo, Hexo, Ghost, etc.)
+4. <article> element
+5. Mozilla Readability algorithm
+6. <main> element
+7. <body> (stripped of scripts, styles, tags)
+```
+
+### Content Selectors
+
+Built-in selectors cover popular CMS and frameworks:
+
+- **WordPress**: `article`, `.post-content`, `.entry-content`
+- **Hugo**: `.post-content`, `.article-content`
+- **Hexo**: `.post-content`, `.article-entry`
+- **Ghost**: `.post-full-content`, `.article-content`
+- **Jekyll**: `.post-content`, `.entry-content`
+- **VuePress**: `.theme-default-content`
+- And 38+ more...
+
+## Prompt System
+
+The prompt assembly follows this order:
+
+```
+1. Global System Prompt (from system_config)
+2. Language-specific prompt template (from prompt_templates)
+3. Page title and content appended as context
+```
+
+Prompt templates exist for **8 languages**: zh, en, ja, ko, fr, es, de, pt.
+
+## Content Sanitization
+
+AI-generated content is sanitized server-side with DOMPurify:
+
+**Allowed tags:** `p, br, strong, em, b, i, a, ul, ol, li, blockquote, pre, code, h1-h6`
+
+## Deduplication
+
+Comments are deduplicated using `content_md5` — an MD5 hash of the generated content.
+This prevents identical comments from being stored multiple times.
+
+## Page Locking
+
+A page-level lock prevents concurrent generation:
+
+```
+First request → acquires lock → generates comments
+Other requests → receive "generating" status with estimatedWait: 30s
+```
+
+## Cache Architecture
+
+| Layer | Implementation | TTL |
+|-------|---------------|-----|
+| Memory | In-memory LRU (max 1000 entries) | 300s |
+| Redis | Optional, configured via plugin | Configurable |
+| CDN | ETag + Cache-Control headers | s-maxage=300 |
+
+## RSS Integration
+
+### RSS Import
+
+AIGCS can import URLs from RSS/Atom feeds and sitemaps:
+
+```bash
+# Trigger from admin panel
+POST /api/admin/sites/:siteId/import-rss
+Body: { "url": "https://blog.example.com/feed.xml" }
+```
+
+Supported formats:
+- **RSS 2.0** — `<item>` entries
+- **Atom** — `<entry>` entries
+- **Sitemap** — `<url>` entries
+
+### Cron Scheduling
+
+| Preset | Cron Expression |
+|--------|----------------|
+| Hourly | `0 * * * *` |
+| Every 6 hours | `0 */6 * * *` |
+| Daily | `0 0 * * *` |
+| Weekly | `0 0 * * 0` |
+
+Custom 5-field cron expressions are also supported.
+
+### Cache Warm
+
+Batch generate comments for multiple pages with configurable:
+- **Concurrency** — 1 to 20 parallel requests
+- **Interval** — delay between batches (to avoid rate limits)
+- **Provider filter** — limit to specific AI providers
+- **CSS selector** — override content extraction

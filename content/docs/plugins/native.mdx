@@ -1,0 +1,35 @@
+---
+title: Native Comments
+description: Visitor comments stored in AIGCS's own database
+---
+
+The **Native Comments** plugin enables visitor comments stored in AIGCS's own database.
+
+## Features
+
+- **Reply Threading** — nested comment replies
+- **Edit Window** — configurable time limit (default: 3 minutes)
+- **Admin PIN** — password for comment moderation
+- **Email Notifications** — new comment and reply alerts
+- **Gravatar Support** — with proxy option
+- **Blocked Keywords** — auto-reject comments containing specified words
+- **Email Domain Filter** — whitelist/blacklist email domains
+
+## Configuration
+
+The Native Comments plugin has 29 configurable settings in the admin panel:
+
+| Setting | Type | Default | Description |
+|---------|------|---------|-------------|
+| `formPosition` | string | `top` | Comment form position (top/bottom) |
+| `aiPosition` | string | `above` | AI vs visitor comment order |
+| `requiredFields` | string[] | `["author","email"]` | Required form fields |
+| `gravatarProxy` | string | — | Gravatar proxy URL |
+| `blockedKeywords` | string[] | `[]` | Auto-reject keywords |
+| `notifyOnReply` | boolean | `true` | Email reply notifications |
+
+## Enabling
+
+1. Go to **Plugins** in the admin panel
+2. Find **Native Comments** in the plugin list
+3. Toggle to enable (changes take effect immediately)

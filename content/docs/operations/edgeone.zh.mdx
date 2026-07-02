@@ -1,0 +1,38 @@
+---
+title: EdgeOne Makers [WIP]
+description: 在 EdgeOne Makers 上部署 AIGCS
+---
+
+<Callout type="warn">此页面正在编写中。EdgeOne Makers 部署功能已计划但尚未实现。</Callout>
+
+## 概述
+
+AIGCS 支持通过云函数部署到腾讯 EdgeOne Makers。
+
+## 构建
+
+```bash
+# 从项目根目录
+pnpm edgeone:build
+```
+
+输出在 `cloud-functions/` 目录中。
+
+## 配置
+
+`edgeone.json` 配置文件云函数：
+
+```json
+{
+  "runtime": "nodejs20",
+  "handler": "index.handler",
+  "memory": 256,
+  "timeout": 30
+}
+```
+
+## 限制
+
+- EdgeOne Makers 云函数存在冷启动延迟
+- 文件存储（头像缓存）可能需要外部对象存储
+- 数据库必须可从 EdgeOne Makers 网络访问

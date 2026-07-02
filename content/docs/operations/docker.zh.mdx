@@ -1,0 +1,93 @@
+---
+title: Docker 运维
+description: Docker 部署和运维指南
+---
+
+## 前提条件
+
+- Docker Engine >= 24.0
+- Docker Compose（可选，推荐 v2）
+
+## 生产环境 compose.yml
+
+```yaml
+services:
+  aigcs:
+    image: openaigcs/aigcs:latest
+    container_name: aigcs
+    restart: unless-stopped
+    ports:
+      - "41905:41905"
+    environment:
+      - JWT_SECRET=${JWT_SECRET}
+      - ENCRYPTION_KEY=${ENCRYPTION_KEY}
+      - DATABASE_URL=file:./data/aigcs.db
+      - NODE_ENV=production
+      - SMTP_HOST=${SMTP_HOST}
+      - SMTP_PORT=${SMTP_PORT}
+      - SMTP_USER=${SMTP_USER}
+      - SMTP_PASS=${SMTP_PASS}
+    volumes:
+      - ./data:/app/data
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "http://localhost:41905/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+```
+
+## 数据备份
+
+### SQLite
+
+```bash
+# 备份
+docker exec aigcs cp /app/data/aigcs.db /app/data/aigcs.db.backup
+
+# 或从外部
+docker cp aigcs:/app/data/aigcs.db ./backup/
+```
+
+## 恢复
+
+### SQLite
+
+```bash
+docker cp ./backup/aigcs.db aigcs:/app/data/aigcs.db
+docker restart aigcs
+```
+
+## 版本升级
+
+```bash
+docker compose pull
+docker compose up -d
+```
+
+数据库迁移在启动时自动运行。
+
+## 日志
+
+```bash
+# 跟踪日志
+docker logs -f aigcs
+
+# 最后 100 行
+docker logs --tail 100 aigcs
+
+# 带时间戳
+docker logs -t aigcs
+```
+
+## 资源限制
+
+```yaml
+services:
+  aigcs:
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '1.0'
+```

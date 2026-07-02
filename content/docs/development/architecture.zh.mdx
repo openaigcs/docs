@@ -1,0 +1,53 @@
+---
+title: 架构
+description: AIGCS 系统架构概览
+---
+
+## 概述
+
+AIGCS 是一个单体仓库，包含 `packages/` 下的六个包和 `packages/plugins/` 下的插件：
+
+```
+packages/
+├── core/         共享类型、Drizzle ORM 模式、常量
+├── server/       Hono HTTP API 服务器、中间件、AI 提供商
+├── admin/        React SPA 管理面板（TanStack Router + Kumo UI）
+├── widget/       用于显示评论的 Web 组件（Shadow DOM）
+└── edgeone/      EdgeOne Makers 部署包
+packages/plugins/
+├── native/       访客评论插件
+└── mastodon/     联邦宇宙/ActivityPub 集成
+```
+
+## 数据流
+
+```
+用户浏览器                    AIGCS 服务器                    AI 提供商
+     │                              │                              │
+     │  ── Widget 加载 ────────►    │                              │
+     │  ◄── 返回评论 JSON ────────  │                              │
+     │                              │                              │
+     │  ── 获取页面内容 ──────►     │                              │
+     │                              │  ── 生成提示词 ──────────►   │
+     │                              │  ◄── AI 响应 ──────────────  │
+     │  ◄── AI 评论已存储 ────────  │                              │
+```
+
+## 请求生命周期
+
+1. **Widget** 通过网站上的 `<script>` 加载
+2. Widget 从 **服务器** API 获取评论
+3. 服务器检查页面缓存：
+   - **已缓存**：立即返回现有的 AI 评论
+   - **未缓存**：获取页面内容 → 发送给 AI 提供商 → 生成评论 → 缓存
+4. 评论显示在 Widget 中（CDN 缓存 + ETag）
+
+## 插件系统
+
+插件通过钩子系统接入服务器生命周期：
+
+```
+beforeGenerate → generate → afterGenerate → beforeRender → afterRender
+```
+
+每个钩子接收一个上下文对象（`PluginHookContext`），可访问请求数据、评论和服务器配置。

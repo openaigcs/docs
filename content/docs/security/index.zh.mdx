@@ -1,0 +1,156 @@
+---
+title: 安全
+description: 安全特性与配置
+---
+
+## 身份验证
+
+### 注册
+
+- 第一个注册用户获得 **admin** 角色
+- 后续注册由 `REGISTRATION_OPEN` 环境变量控制
+- 注册需要邮箱、用户名和密码
+
+### 登录流程
+
+```
+1. 用户提交邮箱/用户名 + 密码
+2. 服务器使用 Argonid 哈希验证
+3. 如果启用了 TOTP → 返回 tempToken，需要 TOTP 验证码
+4. 如果未启用 TOTP → 返回 access + refresh 令牌
+```
+
+### JWT 令牌
+
+| 令牌 | 有效期 | 用途 |
+|-------|----------|-------|
+| Access Token | 15 分钟 | API 身份验证（`Authorization: Bearer`） |
+| Refresh Token | 7 天 | 通过 `POST /auth/refresh` 获取新的访问令牌 |
+
+## 双因素认证（TOTP）
+
+AIGCS 支持基于时间的一次性密码（TOTP）双因素认证。
+
+### 设置
+
+1. 前往 **个人资料 → 双因素认证**
+2. 点击**启用**（需重新输入密码）
+3. 使用认证器应用（Google Authenticator、Authy 等）扫描 QR 码
+4. 输入应用生成的验证码进行验证
+5. 保存 **8 个备用恢复码**（每个只能使用一次）
+
+### 使用 TOTP 登录
+
+```
+POST /api/auth/login
+→ 200 返回 tempToken（需要 TOTP）
+
+POST /api/auth/totp/verify
+请求体：{ tempToken, code }
+→ 200 返回 access + refresh 令牌
+```
+
+### 恢复
+
+如果失去对认证器应用的访问权限，可使用 8 个备用恢复码之一。
+
+## API 令牌
+
+API 令牌无需浏览器登录即可提供机器访问权限。
+
+```
+aigcs_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+```
+
+| 权限范围 | 权限 |
+|-------|-------------|
+| `read` | 公开 API 的只读访问 |
+| `read_write` | 对 widget/comments API 的读写访问 |
+| `admin` | 完整的管理 API 访问 |
+
+令牌以 **SHA-256** 哈希形式存储。
+
+## CSRF 保护
+
+所有对 `/api/admin/*` 的变更请求需要以下请求头：
+
+```
+X-Requested-With: XMLHttpRequest
+```
+
+管理面板会自动为所有 fetch 请求添加此请求头。
+
+## CORS 配置
+
+在**设置 → CORS 允许来源**和 `ALLOWED_ORIGINS` 环境变量中配置。
+
+| 设置 | 行为 |
+|---------|----------|
+| 空列表 | 仅允许站点注册的域名 |
+| `*` | 允许所有来源 |
+| 逗号分隔的 URL | 仅允许特定来源 |
+
+Widget 请求也会根据站点域名验证 Origin。
+
+## 速率限制
+
+| 限制 | 默认值 | 范围 |
+|-------|---------|-------|
+| Admin API | 100 次/60 秒 | 每个 IP |
+| Widget 反应 | 50 次/小时 | 每个访客 |
+| 验证码 | 5 次/天 | 每个邮箱 |
+
+通过 `RATE_LIMIT_MAX` 和 `RATE_LIMIT_WINDOW` 环境变量配置。
+
+## CAPTCHA
+
+在**设置 → CAPTCHA**中配置。支持的提供商：
+
+| 提供商 | 类型 | 备注 |
+|----------|------|-------|
+| Cloudflare Turnstile | 免费，无感 | 推荐 |
+| Google reCAPTCHA | 免费 | v2/v3 |
+| GeeTest | 商业版 | v4 |
+| hCaptcha | 免费/付费 | 注重隐私 |
+| Altcha | 自托管 | 本地 HMAC 验证 |
+| CAP.so | 商业版 | |
+
+## SSRF 保护
+
+`safeFetch` 防止服务端请求伪造：
+
+- **阻止私有 IP**：10.x、172.16-31.x、192.168.x、localhost、127.x.x.x
+- **限制重定向**：最多 5 次重定向
+- **限制响应大小**：最大 10MB
+- 用于：头像代理、页面内容获取
+
+## 加密
+
+| 数据 | 算法 |
+|------|-----------|
+| API 密钥 | AES-256-GCM |
+| SMTP 密码 | AES-256-GCM |
+| TOTP 机密 | AES-256-GCM |
+
+加密密钥来自 `ENCRYPTION_KEY`（回退到 `JWT_SECRET`）。
+
+## 密码哈希
+
+| 算法 | 状态 |
+|-----------|--------|
+| Argonid | 主要（抗 GPU/ASIC 攻击） |
+| bcrypt | 遗留支持（登录时自动升级） |
+
+## XSS 防护
+
+- **服务端**：DOMPurify 净化，白名单标签
+- **客户端**：Widget 使用 `textContent` 进行所有内容插入
+- **允许的标签**：`p, br, strong, em, b, i, a, ul, ol, li, blockquote, pre, code, h1-h6`
+
+## HSTS
+
+```
+Strict-Transport-Security: max-age=31536000; includeSubDomains
+```
+
+默认在服务器中间件中启用。

@@ -1,0 +1,81 @@
+---
+title: 邮件与通知
+description: 邮件配置和通知系统
+---
+
+## 概述
+
+AIGCS 使用 SMTP 发送邮件通知。邮件是可选的——系统在没有邮件的情况下也能正常运行。
+
+## SMTP 配置
+
+在管理面板的**设置 → SMTP**中配置：
+
+| 字段 | 描述 |
+|-------|-------------|
+| Host | SMTP 服务器主机名 |
+| Port | SMTP 端口（默认：587） |
+| User | SMTP 用户名或完整邮箱 |
+| Password | SMTP 密码（通过 AES-256-GCM 加密存储） |
+| From Email | 发件人邮箱地址 |
+| From Name | 发件人显示名称 |
+
+### 环境变量
+
+```bash
+SMTP_HOST=smtp.example.com
+SMTP_PORT=587
+SMTP_USER=noreply@example.com
+SMTP_PASS=your-password
+```
+
+### 测试
+
+点击管理面板中的**发送测试邮件**以验证您的 SMTP 配置。
+
+## 邮件模板
+
+AIGCS 包含 6 个内置 Handlebars 邮件模板：
+
+| 模板 | 触发条件 |
+|----------|---------|
+| `welcome` | 新用户注册 |
+| `comment-generated` | 为页面生成 AI 评论 |
+| `new-comment` | 访客提交评论 |
+| `reply-notification` | 回复访客评论 |
+| `delete-code` | 评论删除验证码 |
+| `rss-import` | RSS 导入完成报告 |
+
+### 自定义模板
+
+模板使用 Handlebars 语法，可自定义：
+
+```html
+<h2>New AI Comments Generated</h2>
+<p>Page: {{pageTitle}}</p>
+<p>URL: {{pageUrl}}</p>
+<p>Comments generated: {{commentCount}}</p>
+```
+
+可用的上下文变量因模板而异。
+
+## 通知事件
+
+| 事件 | 投递方式 | 描述 |
+|-------|----------|-------------|
+| 评论已生成 | 邮件 + Webhook | 为页面创建 AI 评论 |
+| 新访客评论 | 邮件 | 访客提交评论 |
+| 收到回复 | 邮件 | 回复访客评论 |
+| RSS 导入完成 | Webhook | RSS 批量导入完成 |
+
+## 取消订阅系统
+
+每封通知邮件都包含一个取消订阅链接。
+
+```
+GET /api/unsubscribe?email=user@example.com&ctx=site_123&token=<hmac>
+```
+
+- 使用 **HMAC-SHA256** 签名令牌
+- 支持按邮箱 + 按上下文取消订阅
+- 切换功能：再次点击取消订阅可重新订阅

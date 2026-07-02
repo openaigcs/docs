@@ -1,0 +1,168 @@
+---
+title: 快速开始
+description: 使用 Docker 在 5 分钟内部署 AIGCS
+---
+
+## 前提条件
+
+- 您的机器上已安装 [Docker](https://docs.docker.com/get-docker/)
+- 一个 **OpenAI API 密钥**（或其他 AI 提供商密钥）
+- 一个您希望显示评论的网站
+
+## 步骤 1：安装 AIGCS
+
+> 参考 [安装](#installation)
+
+- compose.yml
+
+```yaml
+services:
+  aigcs:
+    image: openaigcs/aigcs:latest
+    container_name: aigcs
+    ports:
+      - "41905:41905"
+    environment:
+      - JWT_SECRET=<change-this>
+      - ENCRYPTION_KEY=<change-this>
+      - NODE_ENV=production
+    volumes:
+      - ./data:/app/data
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "http://localhost:41905/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+```
+
+```bash
+docker compose up -d
+```
+
+> 服务器运行在端口 **41905**（leetspeak：aigcs = 41905）。
+
+## 步骤 2：访问管理面板
+
+在浏览器中打开 `http://YOUR_IP:41905/`，或反代后的域名：`https://aigcs.example.com/`。
+
+1. **注册**您的管理员账户
+2. **创建站点**，输入您的域名（例如 `blog.example.com`）
+3. 您的管理仪表盘已就绪
+
+## 步骤 3：添加 AI 提供商
+
+导航到站点仪表盘 → **提供商** → **添加提供商**。
+
+从列表中选择 **OpenAI**：
+
+| 字段 | 值 |
+|-------|-------|
+| 类型 | `openai` |
+| API 密钥 | `sk-...`（您的 OpenAI 密钥） |
+| 模型 | `gpt-4o-mini` |
+| 启用 | ✅ |
+
+点击**保存**，然后点击**测试**以验证连接。
+
+## 步骤 4：生成您的第一条评论
+
+导航到**缓存** → 输入您的博客文章 URL → 点击**获取并生成**。
+
+几秒钟后，页面状态应变为 `ready`。
+
+## 步骤 5：Widget 嵌入
+
+### 基本用法
+
+```html
+<div id="aigcs">评论</div>
+<script src="https://cdn.jsdelivr.net/npm/@aigcs/widget@1/dist/aigcs.js"></script>
+<script>
+AIGCS.init({
+  el: '#aigcs',
+  site: 'your-blog.com',
+  path: '/post/hello',
+  server: 'https://comments.example.com',
+})
+</script>
+```
+
+### JS API 完整参数
+
+```typescript
+AIGCS.init({
+  el?:        string | HTMLElement   // 挂载元素选择器或 DOM（默认 '#aigcs'）
+  site:       string                 // 必填。站点域名（需与后台添加的域名一致）
+  path:       string                 // 页面路径（默认 location.pathname）
+  server?:    string                 // AIGCS 服务端地址（默认同域）
+  lang?:      'zh' | 'en' | 'zh-hans' | 'zh-hant'   // 语言（默认浏览器自动检测）
+  theme?:     'auto' | 'light' | 'dark'              // 颜色模式（默认 'auto'）
+  lightTheme?:  string              // 亮色主题变体（默认 'light'）
+  darkTheme?:   string              // 暗色主题变体（默认 'dark_dimmed'）
+  autoGenerate?: boolean            // 是否自动触发 AI 生成（默认 false）
+  disableCopyright?: boolean        // 隐藏底部 "Powered by AIGCS"（默认 false）
+  themeColor?: string               // 主题色反转，'inverted'（实验性）
+})
+```
+
+### HTML 属性参考
+
+可直接在 `<aigcs-widget>` 标签上设置属性，代替 JS API：
+
+```html
+<aigcs-widget
+  domain="blog.example.com"
+  path="/your-post-slug"
+  server="https://comments.example.com"
+  auto-generate="true">
+</aigcs-widget>
+<script src="https://cdn.jsdelivr.net/npm/@aigcs/widget@1/dist/aigcs.js" defer></script>
+```
+
+| 属性 | 对应 JS 参数 | 默认值 | 说明 |
+|------|-------------|--------|------|
+| `domain` | `site` | `location.hostname` | 站点域名 |
+| `path` | `path` | `location.pathname` | 页面路径 |
+| `server` | `server` | — | 服务端地址 |
+| `theme` | `theme` | `auto` | 颜色模式 |
+| `light-theme` | `lightTheme` | `light` | 亮色主题 |
+| `dark-theme` | `darkTheme` | `dark_dimmed` | 暗色主题 |
+| `lang` | `lang` | 自动检测 | 语言 |
+| `auto-generate` | `autoGenerate` | `false` | 设为 `true` 启用自动生成 |
+| `disable-copyright` | `disableCopyright` | `false` | 设为 `true` 隐藏版权 |
+| `hide-title` | — | `false` | 设为 `true` 时隐藏「评论」标题 |
+| `comment-limit` | — | `0` | 限制显示的评论数（0=不限） |
+
+### 主题变体
+
+| 亮色 (`lightTheme`) | 暗色 (`darkTheme`) |
+|---------------------|--------------------|
+| `light` | `dark_dimmed` / `dimmed` |
+| `light_high_contrast` | `dark` |
+| `light_protanopia` | `dark_high_contrast` |
+| `light_tritanopia` | `dark_protanopia` |
+| `noborder_light` | `dark_tritanopia` |
+| `catppuccin_latte` | `transparent_dark` |
+| `gruvbox_light` | `noborder_dark` |
+| `fro` | `noborder_gray` |
+| | `cobalt` |
+| | `purple_dark` |
+| | `gruvbox` |
+| | `gruvbox_dark` |
+| | `catppuccin_frappe` |
+| | `catppuccin_macchiato` |
+| | `catppuccin_mocha` |
+
+Widget 使用 Shadow DOM 封装样式，与宿主页面完全隔离。评论内容通过 DOMPurify 在服务端清洗 + `textContent` 插入，防止 XSS。
+
+## 步骤 6：验证
+
+重新加载您的博客文章页面。您应该能看到 widget 中显示的 AI 生成评论。
+
+## 下一步
+
+- 使用[生产环境检查清单](../operations/production-checklist)保护您的生产部署
+- 配置更多 [AI 提供商](../guide/ai-providers)
+- 自定义 [Widget](../guide/widget) 主题
+- 通过[原生评论插件](../plugins/native)启用访客评论
+- 通过[联邦评论插件](../plugins/fediverse)与联邦宇宙同步评论

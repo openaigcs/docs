@@ -1,0 +1,58 @@
+---
+title: Configuration Reference
+description: Configuration schema reference
+---
+
+## System Config
+
+The `system_config` table stores global configuration. Accessible via **Settings** in the admin panel.
+
+### Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `smtp_host` | string | SMTP server |
+| `smtp_port` | number | SMTP port |
+| `smtp_user` | string | SMTP username |
+| `smtp_pass` | string | Encrypted password |
+| `smtp_from_email` | string | Sender email |
+| `smtp_from_name` | string | Sender name |
+| `registration_open` | boolean | Allow public registration |
+| `allowed_origins` | string[] | CORS origins |
+| `site_title` | string | Admin panel title |
+| `site_favicon` | string | Favicon URL |
+| `captcha_provider` | string | Active CAPTCHA provider |
+
+## Site Settings JSON Schema
+
+Each site has a `settings` JSON column with the following fields:
+
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `autoGenerate` | boolean | `false` | Auto-generate on page view |
+| `cacheTtl` | number | `3600` | Cache TTL (seconds) |
+| `theme` | string | `auto` | Widget theme |
+| `commentPlugin` | string | `""` | Active comment plugin |
+| `avatarMode` | string | `aigcs` | Avatar mode |
+| `contentSelector` | string | `""` | CSS selector for content |
+| `aiBadgePosition` | string | `nick` | AI badge position |
+| `reactionEnabled` | boolean | `true` | Enable reactions |
+| `emailNotify` | boolean | `true` | Email notifications |
+| `pingToken` | string | `""` | Ping webhook token |
+| `rssUrl` | string | `""` | RSS feed URL |
+| `fediConfig` | object | `{}` | Fediverse plugin config |
+
+## Plugin Manifest Format
+
+```json
+{
+  "name": "my-plugin",
+  "version": "1.0.0",
+  "description": "Plugin description",
+  "homepage": "https://github.com/user/my-plugin",
+  "commentHandler": "visitor",
+  "defaultSettings": {
+    "setting1": "value1"
+  }
+}
+```

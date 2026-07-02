@@ -1,0 +1,126 @@
+---
+title: 数据库模式
+description: 数据库表及其关系
+---
+
+## 概述
+
+AIGCS 使用 Drizzle ORM，以 SQLite 作为数据库。
+
+## 表
+
+### system_config
+
+全局系统配置（单行，`id = 'global'`）。
+
+| 列名 | 类型 | 描述 |
+|--------|------|-------------|
+| id | text | 主键（`'global'`） |
+| smtp_host | text | SMTP 服务器 |
+| smtp_port | integer | SMTP 端口 |
+| smtp_user | text | SMTP 用户名 |
+| smtp_pass | text | 加密密码 |
+| jwt_secret | text | JWT 签名密钥 |
+| allowed_origins | text | CORS 来源（JSON） |
+| registration_open | integer | 0/1 开关 |
+| site_title | text | 站点标题 |
+| site_favicon | text | Favicon URL |
+
+### users
+
+用户账户。
+
+| 列名 | 类型 | 描述 |
+|--------|------|-------------|
+| id | text | UUID |
+| email | text | 唯一邮箱 |
+| username | text | 唯一用户名 |
+| display_name | text | 显示名称 |
+| password_hash | text | Argonid 哈希 |
+| role | text | `admin` 或 `user` |
+| avatar | text | 头像文件扩展名 |
+
+### api_tokens
+
+API 访问令牌。
+
+| 列名 | 类型 | 描述 |
+|--------|------|-------------|
+| id | text | UUID |
+| user_id | text | 外键 → users |
+| name | text | 令牌标签 |
+| token_hash | text | SHA-256 哈希 |
+| scope | text | `read`、`read_write` 或 `admin` |
+| expires_at | text | 可选过期时间 |
+
+### sites
+
+多站点租户。
+
+| 列名 | 类型 | 描述 |
+|--------|------|-------------|
+| id | text | UUID |
+| user_id | text | 外键 → users |
+| domain | text | 站点域名 |
+| name | text | 站点名称 |
+| settings | text | JSON 数据 |
+
+### providers
+
+AI 提供商配置。
+
+| 列名 | 类型 | 描述 |
+|--------|------|-------------|
+| id | text | UUID |
+| site_id | text | 外键 → sites |
+| type | text | 提供商类型键 |
+| api_key | text | 加密 API 密钥 |
+| endpoint | text | API 端点 URL |
+| model | text | 模型名称 |
+| enabled | integer | 0/1 |
+| sort_weight | integer | 显示顺序 |
+
+### comments
+
+AI 生成的评论。
+
+| 列名 | 类型 | 描述 |
+|--------|------|-------------|
+| id | text | UUID |
+| site_id | text | 外键 → sites |
+| path | text | 页面路径 |
+| author | text | AI 提供商名称 |
+| content | text | 已净化的 HTML |
+| content_md5 | text | MD5 哈希（去重） |
+
+### page_cache
+
+页面内容和生成状态。
+
+| 列名 | 类型 | 描述 |
+|--------|------|-------------|
+| id | text | UUID |
+| site_id | text | 外键 → sites |
+| path | text | 页面路径（每个站点唯一） |
+| status | text | `pending`、`generating`、`ready`、`failed` |
+| title | text | 页面标题 |
+| etag | text | 用于条件请求的 ETag |
+
+### visitor_comments
+
+访客提交的评论（原生评论插件）。
+
+| 列名 | 类型 | 描述 |
+|--------|------|-------------|
+| id | text | UUID |
+| site_id | text | 外键 → sites |
+| path | text | 页面路径 |
+| parent_id | text | 回复父级（可为空） |
+| author | text | 显示名称 |
+| email | text | 邮箱地址 |
+| content | text | 评论内容 |
+| status | text | `pending`、`approved`、`spam` |
+
+### 完整列表（19 张表）
+
+完整模式包括：`system_config`、`users`、`api_tokens`、`sites`、`providers`、`prompt_templates`、`comments`、`page_cache`、`visitor_comments`、`reaction_types`、`comment_reactions`、`reaction_votes`、`mastodon_bindings`、`mastodon_cached_comments`、`webhooks`、`plugins`、`audit_log`、`email_unsubscribes`、`verification_codes`。

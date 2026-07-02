@@ -1,0 +1,23 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --fd-nav-height: 3.5rem;
+}
+
+#nd-toc [role="none"] {
+  background-color: hsl(var(--fd-primary));
+}
+
+/* Sidebar footer: collapse button + GitHub link in one row */
+#nd-sidebar > div > div:last-child {
+  flex-direction: row !important;
+  align-items: center !important;
+}
+#nd-sidebar > div > div:last-child > div:first-child {
+  display: contents !important;
+}
+#nd-sidebar > div > div:last-child > a {
+  order: -1;
+}

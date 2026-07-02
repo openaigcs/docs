@@ -1,0 +1,191 @@
+---
+title: Widget 嵌入
+description: 如何在您的网站上嵌入 AIGCS 评论 Widget
+---
+
+## 概述
+
+AIGCS widget 是一个原生 JavaScript Web 组件，带有 Shadow DOM 隔离——零框架依赖，兼容任何网站。
+
+## 快速嵌入
+
+### 方式一：容器元素（自动检测）
+
+```html
+<div id="aigcs"
+  data-domain="blog.example.com"
+  data-path="/post/hello-world"
+  data-server="https://comments.example.com"
+  data-auto-generate="true">
+</div>
+<script src="https://comments.example.com/widget.js" defer></script>
+```
+
+### 方式二：自定义元素
+
+```html
+<aigcs-widget
+  domain="blog.example.com"
+  path="/post/hello-world"
+  server="https://comments.example.com"
+  theme="auto"
+  lang="zh">
+</aigcs-widget>
+<script src="https://comments.example.com/widget.js" defer></script>
+```
+
+### 方式三：JavaScript API
+
+```html
+<div id="my-comments"></div>
+<script>
+  AIGCS.init({
+    el: '#my-comments',
+    site: 'blog.example.com',
+    path: '/post/hello-world',
+    server: 'https://comments.example.com',
+    lang: 'en',
+    theme: 'auto',
+    autoGenerate: false,
+    commentLimit: 0,
+    maxReactions: 5,
+  });
+</script>
+```
+
+## HTML 属性参考
+
+| 属性 | 默认值 | 描述 |
+|-----------|---------|-------------|
+| `domain` | `location.hostname` | 在 AIGCS 中注册的站点域名 |
+| `path` | `location.pathname` | 用于评论查找的页面路径 |
+| `server` | （同源） | AIGCS 服务器 URL |
+| `theme` | `auto` | 颜色模式（`auto`/`light`/`dark`） |
+| `light-theme` | `light` | 浅色主题变体名称 |
+| `dark-theme` | `dark_dimmed` | 深色主题变体名称 |
+| `lang` | 自动检测 | 语言（`zh`/`en`） |
+| `auto-generate` | `false` | 自动触发 AI 生成（`true`/`false`） |
+| `hide-title` | `false` | 隐藏评论区域标题 |
+| `disable-copyright` | `false` | 隐藏"Powered by AIGCS" |
+| `comment-limit` | `0` | 显示的最大评论数（0 = 无限制） |
+| `max-reactions` | `5` | 折叠前显示的反应数 |
+
+## JavaScript API 参考
+
+### `AIGCS.init(options)`
+
+| 选项 | 类型 | 默认值 | 描述 |
+|--------|------|---------|-------------|
+| `el` | `string \| HTMLElement` | — | 挂载元素选择器或节点 |
+| `site` | `string` | — | 站点域名（必需） |
+| `path` | `string` | `location.pathname` | 页面路径 |
+| `server` | `string` | （同源） | 服务器 URL |
+| `lang` | `'zh' \| 'en'` | 自动检测 | 语言 |
+| `theme` | `'auto' \| 'light' \| 'dark'` | `'auto'` | 颜色模式 |
+| `lightTheme` | `string` | `'light'` | 浅色主题变体 |
+| `darkTheme` | `string` | `'dark_dimmed'` | 深色主题变体 |
+| `autoGenerate` | `boolean` | `false` | 自动触发 AI 生成 |
+| `commentLimit` | `number` | `0` | 最大评论数（0 = 无限制） |
+| `maxReactions` | `number` | `5` | 折叠前显示的反应数 |
+
+## 主题系统
+
+### 浅色主题
+
+| 名称 | 描述 |
+|------|-------------|
+| `light` | 默认浅色 |
+| `light_high_contrast` | 高对比度浅色 |
+| `light_protanopia` | 无障碍（红色盲） |
+| `light_tritanopia` | 无障碍（蓝色盲） |
+| `noborder_light` | 无边框浅色 |
+| `catppuccin_latte` | Catppuccin Latte |
+| `gruvbox_light` | Gruvbox 浅色 |
+| `fro` | Fro 主题 |
+
+### 深色主题
+
+| 名称 | 描述 |
+|------|-------------|
+| `dark_dimmed` / `dimmed` | 默认暗色 |
+| `dark` | 全深色 |
+| `dark_high_contrast` | 高对比度深色 |
+| `dark_protanopia` | 无障碍（红色盲） |
+| `dark_tritanopia` | 无障碍（蓝色盲） |
+| `transparent_dark` | 透明深色 |
+| `noborder_dark` | 无边框深色 |
+| `noborder_gray` | 无边框灰色 |
+| `cobalt` | RStudio Cobalt |
+| `purple_dark` | 紫色深色 |
+| `gruvbox` | Gruvbox |
+| `gruvbox_dark` | Gruvbox 深色 |
+| `catppuccin_frappe` | Catppuccin Frappé |
+| `catppuccin_macchiato` | Catppuccin Macchiato |
+| `catppuccin_mocha` | Catppuccin Mocha |
+
+## 头像缓存模式
+
+在站点设置的 `avatarMode` 中配置：
+
+| 模式 | 描述 |
+|------|-------------|
+| `aigcs` | AIGCS 代理并本地缓存头像（WebP，限制 10K） |
+| `mravatar` | 使用 Mravatar 外部服务 |
+| `off` | 无头像代理 |
+
+## 框架集成
+
+### React
+
+```tsx
+import { useEffect, useRef } from 'react';
+
+function AIGCSWidget({ domain, path }: { domain: string; path: string }) {
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const script = document.createElement('script');
+    script.src = 'https://comments.example.com/widget.js';
+    script.defer = true;
+    ref.current?.appendChild(script);
+
+    return () => { script.remove(); };
+  }, []);
+
+  return (
+    <div
+      ref={ref}
+      id="aigcs"
+      data-domain={domain}
+      data-path={path}
+    />
+  );
+}
+```
+
+### Vue
+
+```vue
+<template>
+  <div id="aigcs" :data-domain="domain" :data-path="path" />
+</template>
+
+<script setup>
+import { onMounted } from 'vue';
+const props = defineProps({ domain: String, path: String });
+
+onMounted(() => {
+  const script = document.createElement('script');
+  script.src = 'https://comments.example.com/widget.js';
+  script.defer = true;
+  document.body.appendChild(script);
+});
+</script>
+```
+
+## 性能
+
+- **Shadow DOM** — 完整的样式隔离，无 CSS 冲突
+- **ETag** — 支持 304 的条件请求
+- **CDN 缓存** — `Cache-Control: public, s-maxage=300, stale-while-revalidate=86400`
+- **懒加载** — 延迟加载直到 widget 进入视口

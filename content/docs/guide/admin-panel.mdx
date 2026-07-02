@@ -1,0 +1,228 @@
+---
+title: Admin Panel
+description: Complete guide to the AIGCS management panel
+---
+
+## Overview
+
+The AIGCS admin panel is a single-page application (React + TanStack Router) with the following sections:
+
+| Section | Route | Description |
+|---------|-------|-------------|
+| Dashboard | `/` | System overview and statistics |
+| Sites | `/sites` | Multi-tenant site management |
+| Providers | `/providers` | AI provider configuration |
+| Prompts | `/prompts` | System prompt templates |
+| Cache | `/cache` | Page cache management |
+| Reactions | `/reactions` | Emoji reaction types |
+| Users | `/users` | User management (admin only) |
+| Plugins | `/plugins` | Plugin management |
+| Webhooks | `/webhooks` | Webhook configuration |
+| API Tokens | `/api-tokens` | API access tokens |
+| Audit Log | `/audit-log` | Activity audit trail |
+| Profile | `/profile` | Personal settings |
+| Settings | `/settings` | Global system settings |
+
+## Dashboard
+
+The dashboard shows:
+- **Total Sites** — number of registered sites
+- **Total Providers** — AI provider count across all sites
+- **Total Comments** — generated AI comments
+- **Cached Pages** — pages with cached content
+
+## Site Management
+
+Each **Site** represents a website where AIGCS comments are embedded.
+
+### Site Settings
+
+| Setting | Type | Default | Description |
+|---------|------|---------|-------------|
+| `autoGenerate` | boolean | `false` | Auto-generate comments on page view |
+| `cacheTtl` | number | `3600` | Cache TTL in seconds |
+| `theme` | string | `auto` | Widget theme (auto/light/dark) |
+| `commentPlugin` | string | — | Active comment plugin name |
+| `avatarMode` | string | `aigcs` | Avatar mode (aigcs/mravatar/off) |
+| `contentSelector` | string | — | CSS selector for page content extraction |
+| `aiBadgePosition` | string | `nick` | AI badge position (nick/br/tl/bl/tr/tl-inline) |
+| `reactionEnabled` | boolean | `true` | Enable emoji reactions |
+| `pingToken` | string | — | Ping webhook token |
+
+### Creating a Site
+
+1. Click **Add Site**
+2. Enter the **Domain** (e.g., `blog.example.com`)
+3. Enter the **Name** (e.g., `My Blog`)
+4. Click **Save**
+
+## AI Provider Management
+
+See the [AI Providers](ai-providers) section for detailed configuration of all 14+ providers.
+
+### Provider Features
+
+- **Encrypted API Keys** — all API keys are encrypted at rest using AES-256-GCM
+- **Test Provider** — generate a sample comment to verify configuration
+- **Drag-and-Drop Sort** — reorder providers to control comment generation priority
+- **Custom Avatars** — upload SVG avatars for each provider
+
+### Provider Defaults
+
+Global provider defaults can be configured in the **Providers** page. These serve as templates when adding providers to individual sites.
+
+## Prompt Templates
+
+Prompt templates are system prompts used to instruct AI models on how to generate comments.
+
+### Features
+
+- **8 Languages** — zh, en, ja, ko, fr, es, de, pt
+- **Categories** — organize prompts by purpose
+- **Import** — bulk import from GitHub raw JSON URL
+- **Global System Prompt** — prepended to all generation prompts
+
+### Prompt Format
+
+```json
+{
+  "name": "technical-review",
+  "content": "You are a technical reviewer...",
+  "lang": "en",
+  "category": "technical",
+  "isSystem": true
+}
+```
+
+## Cache Management
+
+The cache system manages page content and AI comment generation.
+
+### Cache States
+
+| State | Description |
+|-------|-------------|
+| `pending` | Awaiting content fetch and generation |
+| `generating` | Content being fetched, AI providers generating |
+| `ready` | Comments available and cached |
+| `failed` | All providers errored during generation |
+
+### Operations
+
+- **Fetch & Generate** — fetch page content and generate comments
+- **Warm Cache** — batch generate for multiple pages
+- **Clear Cache** — remove cached entries
+- **Restore** — recover deleted cache entries
+
+## Reaction Management
+
+Six built-in emoji reactions are provided:
+
+| Emoji | Label | Sort |
+|-------|-------|------|
+| 👍 | Thumbs Up | 1 |
+| 😄 | Smile | 2 |
+| 🎉 | Tada | 3 |
+| ❤️ | Heart | 4 |
+| 🚀 | Rocket | 5 |
+| 👀 | Eyes | 6 |
+
+Custom reactions can be added, and any reaction can be enabled/disabled.
+
+## User Management
+
+Available to **admin** role users only.
+
+- List all users
+- Create new users
+- Edit user details and role
+
+## Plugin Management
+
+See the [Plugins](plugins) section for details.
+
+## Webhook Management
+
+See the [Webhooks](../reference/webhooks) section for details.
+
+## API Tokens
+
+Three scope levels:
+
+| Scope | Permissions |
+|-------|-------------|
+| `read` | Read-only access to public APIs |
+| `read_write` | Read and write access |
+| `admin` | Full administrative access |
+
+Tokens start with `aigcs_` prefix and are stored as SHA-256 hashes.
+
+## Audit Log
+
+Tracks all admin actions with:
+- User ID
+- Action type
+- IP address
+- User agent
+- Details (JSON)
+
+Audit logs are user-scoped — regular users only see their own actions.
+
+## Profile Settings
+
+### Avatar
+
+- Max 2MB, formats: png/jpg/gif/webp
+- Stored as file in `data/avatars/`
+- Gravatar fallback with timeout handling
+
+### TOTP Two-Factor Authentication
+
+1. **Setup** — click Enable, scan QR code with authenticator app
+2. **Verify** — enter a code from the app
+3. **Backup Codes** — 8 one-time recovery codes (save them securely)
+4. **Login** — after password, enter TOTP code
+
+### Change Password
+
+Requires current password verification. Passwords are hashed with **Argon2id**.
+
+## System Settings
+
+### SMTP
+
+| Field | Description |
+|-------|-------------|
+| Host | SMTP server hostname |
+| Port | SMTP port (default: 587) |
+| User | SMTP username |
+| Password | Encrypted at rest |
+| From Email | Sender address |
+| From Name | Sender display name |
+
+### CAPTCHA
+
+Supported providers:
+
+| Provider | Env Variables |
+|----------|--------------|
+| Cloudflare Turnstile | `TURNSTILE_SITE_KEY`, `TURNSTILE_SECRET_KEY` |
+| Google reCAPTCHA | `RECAPTCHA_SITE_KEY`, `RECAPTCHA_SECRET_KEY` |
+| GeeTest | `GEETEST_CAPTCHA_ID`, `GEETEST_CAPTCHA_KEY` |
+| hCaptcha | `HCAPTCHA_SITE_KEY`, `HCAPTCHA_SECRET_KEY` |
+| Altcha | `ALTCHA_SITE_KEY`, `ALTCHA_SECRET_KEY` |
+| CAP.so | `CAP_SITE_KEY`, `CAP_SECRET_KEY`, `CAP_VERIFY_URL` |
+
+### CORS
+
+- Empty list: only the site's domain is allowed
+- `*`: allow all origins
+- Comma-separated URLs: specific origins allowed
+
+### Rate Limiting
+
+| Limit | Default | Scope |
+|-------|---------|-------|
+| Admin API | 100 req/60s | Per IP |
+| Widget Reactions | 50 req/hour | Per visitor |
+| Verification Codes | 5 req/day | Per email |

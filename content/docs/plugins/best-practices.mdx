@@ -1,0 +1,48 @@
+---
+title: Best Practices
+description: Developing custom plugins for AIGCS
+---
+
+## Project Structure
+
+```
+my-plugin/
+├── index.ts          # Plugin implementation
+├── manifest.json     # Plugin metadata
+└── package.json
+```
+
+## manifest.json
+
+```json
+{
+  "name": "my-plugin",
+  "version": "1.0.0",
+  "description": "My custom plugin"
+}
+```
+
+## Simple Plugin Example
+
+```typescript
+import type { Plugin, PluginHookContext } from '@aigcs/core';
+
+const myPlugin: Plugin = {
+  name: 'my-plugin',
+  version: '1.0.0',
+  commentHandler: 'none',
+  hooks: {
+    beforeGenerate(ctx: PluginHookContext) {
+      ctx.systemPrompt += '\nPlease write in a friendly tone.';
+      return ctx;
+    },
+  },
+};
+
+export default myPlugin;
+```
+
+## Testing
+
+Plugins can be loaded from the `plugins/` directory (dev) or deployed via the admin panel (uploaded).
+Enable/disable takes effect immediately — no server restart required.

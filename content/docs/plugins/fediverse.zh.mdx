@@ -1,0 +1,61 @@
+---
+title: 联邦宇宙插件
+description: 与 ActivityPub 平台同步评论
+---
+
+**Mastodon** 插件在您的 AIGCS 站点和 ActivityPub 平台之间同步评论。
+
+## 支持的平台
+
+| 平台 | 协议说明 |
+|----------|---------------|
+| Mastodon | 完整 OAuth + API |
+| GoToSocial | 兼容 Mastodon API |
+| Pleroma / Akkoma | 兼容 Mastodon API |
+| Misskey / Sharkey / Firefish | 兼容 Misskey API |
+| Loops | Mastodon API |
+| WriteFreely | ActivityPub |
+
+## 设置
+
+1. **添加实例** — 输入您的 Mastodon 实例 URL
+2. **OAuth 授权** — 授权 AIGCS 访问您的账户（弹窗流程）
+3. **绑定状态** — 将 Mastodon 帖子链接到您站点的页面路径
+
+## 绑定
+
+绑定将 Mastodon 状态连接到您站点的页面：
+
+```
+Mastodon 帖子：https://mastodon.social/@user/12345
+       ↓ 绑定
+站点页面：/blog/my-article
+```
+
+绑定可以：
+- 在管理面板中手动创建
+- 从管理面板发布嘟文时自动创建
+- 从搜索结果同步
+
+## 获取评论
+
+绑定后，AIGCS 可以自动获取并缓存对 Mastodon 状态的回复：
+
+| 设置 | 描述 |
+|---------|-------------|
+| `autoFetch` | 自动获取新回复 |
+| `cacheTtl` | 缓存时长（分钟） |
+
+获取的联邦宇宙评论将与 AI 生成的评论一起注入到 widget 中。
+
+## 分离域名和账号
+
+插件支持分离域名配置，即 OAuth 实例与账户的主实例不同。
+
+## 头像模式
+
+| 模式 | 描述 |
+|------|-------------|
+| `aigcs` | AIGCS 代理并缓存头像 |
+| `mravatar` | 外部 Mravatar 服务 |
+| `off` | 无头像代理 |

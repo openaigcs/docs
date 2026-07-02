@@ -1,0 +1,29 @@
+---
+title: Migration Guide
+description: Migrate from other comment systems to AIGCS
+---
+
+## Overview
+
+Migrating to AIGCS from another comment system can be done in a few steps, depending on the source system.
+
+## General Process
+
+1. **Deploy AIGCS** — follow the [Quick Start](../getting-started/quick-start)
+2. **Create a site** matching your domain
+3. **Configure AI providers** for your comment needs
+4. **Embed the widget** on your site
+5. **Redirect old comment URLs** (if needed)
+6. **Deactivate old system** once satisfied
+
+## From twikoo / waline / artalk [WIP]
+
+<Callout type="warn">Automated import from these systems is planned but not yet implemented.</Callout>
+
+These systems store visitor comments in their databases.
+AIGCS doesn't have an automated import tool for these systems yet.
+
+**Manual migration:**
+1. Export comments from the source system (usually JSON/CSV)
+2. Use the AIGCS API to import visitor comments
+3. Visitor comment import endpoint: `POST /api/admin/sites/:siteId/comments/visitor/import`
