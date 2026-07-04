@@ -9,7 +9,79 @@ description: Build and publish the AIGCS widget package
 pnpm --filter @aigcs/widget build
 ```
 
-## Publish
+This runs three steps:
+
+| Command | Output | Description |
+|---------|--------|-------------|
+| `vite build` | `dist/aigcs.js` | Full version with inline CSS (30 KB gzip) |
+| `vite build --config vite.config.lite.ts` | `dist/aigcs-lite.js` | Lite version, JS only (25 KB gzip) |
+| `node scripts/extract-css.js` | `dist/aigcs.css` | Standalone CSS (29 KB) |
+
+### Build Outputs
+
+| File | Size | gzip | Description |
+|------|------|------|-------------|
+| `aigcs.js` | 111 KB | 30 KB | Full bundle with inline CSS, GFM markdown |
+| `aigcs-lite.js` | 82 KB | 25 KB | JS only — bring your own styles |
+| `aigcs.css` | 29 KB | — | Extracted CSS for Lite version |
+
+## Usage
+
+### Full Version (recommended for most users)
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/@aigcs/widget@1/dist/aigcs.js"></script>
+```
+Includes all styles inline — zero additional setup.
+
+### Lite Version + Official CSS
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/@aigcs/widget@1/dist/aigcs-lite.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@aigcs/widget@1/dist/aigcs.css">
+```
+
+### Lite Version + Custom CSS
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/@aigcs/widget@1/dist/aigcs-lite.js"></script>
+<link rel="stylesheet" href="my-theme.css">
+```
+
+The Lite version exposes the same HTML structure — override CSS variables to customize:
+
+```css
+aigcs-widget {
+  --outer-bg: #f5f5f5;
+  --card-bg: #fafafa;
+  --text: #1f2937;
+  --text-secondary: #6b7280;
+  --border: #e5e7eb;
+  --link: #3b82f6;
+  --error-color: #ef4444;
+}
+```
+
+## GFM Markdown
+
+Comment content is rendered as [GitHub Flavored Markdown](https://github.com/markedjs/marked) via the `marked` library. Supported syntax:
+
+- **Bold**, *italic*, `inline code`
+- Code blocks with language tags
+- Links, lists, blockquotes
+
+Rendered content is sanitized with DOMPurify before insertion.
+
+## CI Publishing
+
+The widget is automatically published to npm via **GitHub Actions** when a tag matching `widget-v*` is pushed, or manually via workflow dispatch.
+
+The workflow uses **OIDC trusted publishing** — no `NODE_AUTH_TOKEN` required. Configure a trusted publisher on npmjs.com:
+- **Owner:** `openaigcs`
+- **Repository:** `aigcs`
+- **Workflow:** `widget-publish.yml`
+
+## Manual Publish
 
 ```bash
 pnpm --filter @aigcs/widget publish

@@ -49,6 +49,10 @@ AIGCS 管理面板是一个单页应用（React + TanStack Router），包含以
 | `reactionEnabled` | boolean | `true` | 启用 emoji 反应 |
 | `pingToken` | string | — | Ping webhook 令牌 |
 
+### 评论 Markdown
+
+管理面板中的评论内容以 Markdown（GFM）格式渲染。AI 生成和访客提交的评论均支持粗体、斜体、行内代码、代码块、链接、列表和引用。内容在服务端经过 DOMPurify 清洗。
+
 ### 创建站点
 
 1. 点击**添加站点**
@@ -137,6 +141,27 @@ AIGCS 管理面板是一个单页应用（React + TanStack Router），包含以
 - 创建新用户
 - 编辑用户详细信息和角色
 
+## 评论导入/导出
+
+在每个站点的仪表盘中可用。支持批量导入/导出原生访客评论。
+
+### 导出
+
+点击**导出评论**下载该站点的所有访客评论为 JSON。每条评论包含：id、path、parentId、authorName、authorEmail、content、状态、时间戳。
+
+### 导入
+
+1. 准备一个包含 `comments` 数组的 JSON 文件（或使用导出的文件）
+2. 点击**选择文件** → 选择您的 JSON
+3. 点击**导入评论**
+4. 结果显示：`{ imported, skipped, total }`
+
+重复的 ID 会自动跳过。
+
+### 下载模板
+
+点击**下载模板**获取示例 JSON，包含示例评论（含回复），帮助您理解导入格式。
+
 ## 插件管理
 
 详见[插件](plugins)章节。
@@ -200,6 +225,8 @@ AIGCS 管理面板是一个单页应用（React + TanStack Router），包含以
 | From Email | 发件人地址 |
 | From Name | 发件人显示名称 |
 
+**邮件语言** — 设置通知邮件模板的语言（`en` 或 `zh`）。控制所有邮件类型（欢迎、验证码、评论通知等）的主题行和正文内容的语言。模板完全支持双语。
+
 ### CAPTCHA
 
 支持的提供商：
@@ -218,6 +245,8 @@ AIGCS 管理面板是一个单页应用（React + TanStack Router），包含以
 - 空列表：仅允许站点域名
 - `*`：允许所有来源
 - 逗号分隔的 URL：允许特定来源
+
+创建或更新站点时，`http://{domain}` 和 `https://{domain}` 会自动添加到允许的来源列表中。
 
 ### 速率限制
 

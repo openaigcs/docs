@@ -9,7 +9,79 @@ description: 构建并发布 AIGCS Widget 包
 pnpm --filter @aigcs/widget build
 ```
 
-## 发布
+该命令依次执行三个步骤：
+
+| 命令 | 产物 | 描述 |
+|---------|--------|-------------|
+| `vite build` | `dist/aigcs.js` | 完整版，内联 CSS（gzip 30 KB） |
+| `vite build --config vite.config.lite.ts` | `dist/aigcs-lite.js` | Lite 版，仅 JS（gzip 25 KB） |
+| `node scripts/extract-css.js` | `dist/aigcs.css` | 独立的 CSS 文件（29 KB） |
+
+### 构建产物
+
+| 文件 | 大小 | gzip | 描述 |
+|------|------|------|-------------|
+| `aigcs.js` | 111 KB | 30 KB | 完整版，含内联 CSS + GFM markdown |
+| `aigcs-lite.js` | 82 KB | 25 KB | 仅 JS — 自带样式 |
+| `aigcs.css` | 29 KB | — | 从完整版提取的 CSS |
+
+## 使用方式
+
+### 完整版（推荐）
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/@aigcs/widget@1/dist/aigcs.js"></script>
+```
+样式已内联，零额外配置。
+
+### Lite 版 + 官方 CSS
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/@aigcs/widget@1/dist/aigcs-lite.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@aigcs/widget@1/dist/aigcs.css">
+```
+
+### Lite 版 + 自定义 CSS
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/@aigcs/widget@1/dist/aigcs-lite.js"></script>
+<link rel="stylesheet" href="my-theme.css">
+```
+
+Lite 版输出的 HTML 结构与完整版相同。通过 CSS 变量自定义主题：
+
+```css
+aigcs-widget {
+  --outer-bg: #f5f5f5;
+  --card-bg: #fafafa;
+  --text: #1f2937;
+  --text-secondary: #6b7280;
+  --border: #e5e7eb;
+  --link: #3b82f6;
+  --error-color: #ef4444;
+}
+```
+
+## GFM Markdown
+
+评论内容通过 `marked` 库渲染为 [GitHub Flavored Markdown](https://github.com/markedjs/marked)。支持的语法：
+
+- **粗体**、*斜体*、`行内代码`
+- 带语言标签的代码块
+- 链接、列表、引用
+
+渲染后的内容会经过 DOMPurify 清洗后插入。
+
+## CI 发布
+
+Widget 通过 **GitHub Actions** 自动发布到 npm。触发条件：推送匹配 `widget-v*` 的标签，或通过工作流手动触发。
+
+工作流使用 **OIDC trusted publishing** — 无需 `NODE_AUTH_TOKEN`。在 npmjs.com 上配置可信发布者：
+- **Owner：** `openaigcs`
+- **Repository：** `aigcs`
+- **Workflow：** `widget-publish.yml`
+
+## 手动发布
 
 ```bash
 pnpm --filter @aigcs/widget publish

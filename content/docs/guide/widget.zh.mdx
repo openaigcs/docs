@@ -183,6 +183,52 @@ onMounted(() => {
 </script>
 ```
 
+## Markdown 支持
+
+评论内容通过 `marked` 库渲染为 **GitHub Flavored Markdown**。所有评论内容——包括 AI 生成和访客提交——均支持：
+
+- **粗体**、*斜体*、`行内代码`
+- 带语言标签的代码块
+- 链接、有序/无序列表、引用
+
+原始 markdown 在服务端经过 DOMPurify 清洗后再渲染。
+
+## 完整版 vs Lite 版
+
+Widget 提供两种构建版本：
+
+| 版本 | 大小 | CSS | 适用场景 |
+|---------|------|-----|----------|
+| `aigcs.js`（完整版） | 30 KB gzip | 内联 | 快速嵌入，零配置 |
+| `aigcs-lite.js`（Lite 版） | 25 KB gzip | 外部 | 自定义主题，完全控制 CSS |
+
+### 完整版（默认）
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/@aigcs/widget@1/dist/aigcs.js" defer></script>
+```
+
+### Lite 版
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/@aigcs/widget@1/dist/aigcs-lite.js" defer></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@aigcs/widget@1/dist/aigcs.css">
+```
+
+Lite 版输出与完整版相同的 HTML 结构，但样式完全由你掌控。通过 CSS 变量自定义：
+
+```css
+aigcs-widget {
+  --outer-bg: #f5f5f5;
+  --card-bg: #fafafa;
+  --text: #1f2937;
+  --text-secondary: #6b7280;
+  --border: #e5e7eb;
+  --link: #3b82f6;
+  --error-color: #ef4444;
+}
+```
+
 ## 性能
 
 - **Shadow DOM** — 完整的样式隔离，无 CSS 冲突

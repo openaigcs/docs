@@ -49,6 +49,10 @@ Each **Site** represents a website where AIGCS comments are embedded.
 | `reactionEnabled` | boolean | `true` | Enable emoji reactions |
 | `pingToken` | string | — | Ping webhook token |
 
+### Comment Markdown
+
+Comments in the admin panel are rendered as Markdown (GFM). Both AI-generated and visitor-submitted comments support bold, italic, inline code, code blocks, links, lists, and blockquotes. Content is sanitized server-side via DOMPurify.
+
 ### Creating a Site
 
 1. Click **Add Site**
@@ -137,6 +141,27 @@ Available to **admin** role users only.
 - Create new users
 - Edit user details and role
 
+## Comment Import/Export
+
+Available per site in the site dashboard. Supports bulk import/export of native visitor comments.
+
+### Export
+
+Click **Export Comments** to download all visitor comments for the site as JSON. Each comment includes: id, path, parentId, authorName, authorEmail, content, status, timestamps.
+
+### Import
+
+1. Prepare a JSON file with a `comments` array (or use an exported file)
+2. Click **Select File** → choose your JSON
+3. Click **Import Comments**
+4. Results show: `{ imported, skipped, total }`
+
+Duplicate IDs are automatically skipped.
+
+### Download Template
+
+Click **Download Template** to get a sample JSON with example comments (including replies) to guide your import format.
+
 ## Plugin Management
 
 See the [Plugins](plugins) section for details.
@@ -200,6 +225,8 @@ Requires current password verification. Passwords are hashed with **Argon2id**.
 | From Email | Sender address |
 | From Name | Sender display name |
 
+**Email Language** — set the locale for notification email templates (`en` or `zh`). This controls the language of subject lines and body content for all email types (welcome, verification codes, comment notifications, etc.). Templates are fully bilingual.
+
 ### CAPTCHA
 
 Supported providers:
@@ -218,6 +245,8 @@ Supported providers:
 - Empty list: only the site's domain is allowed
 - `*`: allow all origins
 - Comma-separated URLs: specific origins allowed
+
+When creating or updating a site, `http://{domain}` and `https://{domain}` are automatically added to the allowed origins list.
 
 ### Rate Limiting
 

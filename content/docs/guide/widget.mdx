@@ -184,6 +184,52 @@ onMounted(() => {
 </script>
 ```
 
+## Markdown Support
+
+Comments are rendered as **GitHub Flavored Markdown** using the `marked` library. All comment content — both AI-generated and visitor-submitted — supports:
+
+- **Bold**, *italic*, `inline code`
+- Code blocks with syntax language tags
+- Links, ordered/unordered lists, blockquotes
+
+Raw markdown is sanitized server-side via DOMPurify before rendering.
+
+## Full vs Lite
+
+The widget is available in two build variants:
+
+| Version | Size | CSS | Use Case |
+|---------|------|-----|----------|
+| `aigcs.js` (Full) | 30 KB gzip | Inline | Quick embed, zero config |
+| `aigcs-lite.js` (Lite) | 25 KB gzip | External | Custom theming, CSS control |
+
+### Full Version (default)
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/@aigcs/widget@1/dist/aigcs.js" defer></script>
+```
+
+### Lite Version
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/@aigcs/widget@1/dist/aigcs-lite.js" defer></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@aigcs/widget@1/dist/aigcs.css">
+```
+
+The Lite version outputs the same HTML structure but leaves styling entirely to you. Override CSS variables for full control:
+
+```css
+aigcs-widget {
+  --outer-bg: #f5f5f5;
+  --card-bg: #fafafa;
+  --text: #1f2937;
+  --text-secondary: #6b7280;
+  --border: #e5e7eb;
+  --link: #3b82f6;
+  --error-color: #ef4444;
+}
+```
+
 ## Performance
 
 - **Shadow DOM** — complete style isolation, no CSS conflicts

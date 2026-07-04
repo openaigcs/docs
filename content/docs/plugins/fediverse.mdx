@@ -33,18 +33,22 @@ Site page: /blog/my-article
 ```
 
 Bindings can be:
-- Created manually in the admin panel
+- Created manually in the admin panel — enter either a **Status ID** or a full **Status URL**
 - Auto-created when publishing a toot from the admin
 - Synced from search results
+
+Creating a binding (manually or via search) automatically creates a corresponding cache entry so comments appear immediately.
 
 ## Fetching Comments
 
 Once bound, AIGCS can automatically fetch and cache replies to the Mastodon status:
 
-| Setting | Description |
-|---------|-------------|
-| `autoFetch` | Automatically fetch new replies |
-| `cacheTtl` | Cache duration in minutes |
+| Setting | Default | Description |
+|---------|---------|-------------|
+| `autoFetch` | `false` | Automatically fetch new replies |
+| `cacheTtl` | — | Cache duration in minutes |
+
+When `autoFetch` is enabled, cached replies are served on page load; when disabled, every page view fetches live data.
 
 Fetched fediverse comments are injected into the widget alongside AI-generated comments.
 

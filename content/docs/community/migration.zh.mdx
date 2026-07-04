@@ -16,14 +16,12 @@ description: 从其他评论系统迁移到 AIGCS
 5. **重定向旧评论 URL**（如果需要）
 6. **停用旧系统** — 确认满意后
 
-## 从 twikoo / waline / artalk 迁移 [WIP]
+## 从 twikoo / waline / artalk 迁移
 
-<Callout type="warn">从这些系统的自动导入功能已计划但尚未实现。</Callout>
+<Callout type="warn">暂无计划开发针对这些系统的自动迁移工具。</Callout>
 
-这些系统将访客评论存储在其数据库中。
-AIGCS 目前还没有针对这些系统的自动导入工具。
-
-**手动迁移：**
-1. 从来源系统导出评论（通常为 JSON/CSV）
-2. 使用 AIGCS API 导入访客评论
-3. 访客评论导入端点：`POST /api/admin/sites/:siteId/comments/visitor/import`
+要迁移您已有的评论：
+1. 从来源系统导出评论备份（通常为 JSON/CSV）
+2. 在站点仪表盘 → 评论导入/导出中点击**下载模板**，获取 AIGCS 的评论备份格式
+3. 使用 AI 编写转换脚本，将导出的评论备份转换为 AIGCS 的模板格式
+4. 通过管理面板的**评论导入/导出**功能导入转换后的文件
