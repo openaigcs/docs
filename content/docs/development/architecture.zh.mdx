@@ -5,15 +5,17 @@ description: AIGCS 系统架构概览
 
 ## 概述
 
-AIGCS 是一个单体仓库，包含 `packages/` 下的六个包和 `packages/plugins/` 下的插件：
+AIGCS 当前版本 (V1) 被定义为一个高度内聚的标准 Node.js Monorepo。主要聚焦在基于传统服务器端环境和 SQLite 本地文件数据库的稳定性上。为了方便未来的开发，结构虽然预留了对边缘函数 (Edge Functions，如腾讯云 EdgeOne) 的部署打包兼容（位于 `packages/edgeone`），但彻底的**云原生（Serverless/分布式架构）改造**被推迟至下一个大阶段。我们目前的理念是“把现在作为稳定的 V1 第一版”。
+
+AIGCS 是一个单体仓库，包含 `packages/` 下的五个核心包和 `packages/plugins/` 下的插件：
 
 ```
 packages/
 ├── core/         共享类型、Drizzle ORM 模式、常量
-├── server/       Hono HTTP API 服务器、中间件、AI 提供商
-├── admin/        React SPA 管理面板（TanStack Router + Kumo UI）
-├── widget/       用于显示评论的 Web 组件（Shadow DOM）
-└── edgeone/      EdgeOne Makers 部署包
+├── server/       Hono HTTP API 服务器、中间件、通知服务
+├── admin/        基于 TanStack Router + React Query 构建的现代 SPA 管理面板
+├── widget/       用于显示评论的 Web 组件（无框架依赖的 Shadow DOM）
+└── edgeone/      为未来云原生 Edge Functions 预留的打包构建脚本
 packages/plugins/
 ├── native/       访客评论插件
 └── mastodon/     联邦宇宙/ActivityPub 集成

@@ -28,8 +28,21 @@ The Native Comments plugin has 29 configurable settings in the admin panel:
 | `blockedKeywords` | string[] | `[]` | Auto-reject keywords |
 | `notifyOnReply` | boolean | `true` | Email reply notifications |
 
-## Enabling
+## Enable
 
 1. Go to **Plugins** in the admin panel
-2. Find **Native Comments** in the plugin list
+2. Find **Native Comment Plugin** in the plugin list
 3. Toggle to enable (changes take effect immediately)
+
+## Site Owner Anti-Impersonation (Admin PIN)
+
+The native plugin enforces a strict anti-impersonation feature. When a visitor attempts to submit a comment using an email address that belongs to the site's administrator list, the system will require them to provide the correct **Admin PIN** (configurable in the backend). If the correct PIN is not provided, the submission is rejected. This guarantees that no one can impersonate the site owner in the comment section.
+
+## Comment Deletion Mechanism and Security
+
+AIGCS has designed a strict secure soft-deletion mechanism for the native comment plugin to ensure privacy and prevent abuse:
+
+1. **Ownership Verification**: Visitors must request deletion using the exact email address they originally used to post the comment.
+2. **Email Verification Code**: The system sends a high-entropy, 6-digit one-time verification code to the email, valid for 30 minutes. This heavily relies on a correctly configured SMTP service in the backend.
+3. **Soft Delete and Privacy Erasure**: To prevent breaking the comment tree structure, the system performs a "soft delete" upon successful verification. The comment content is replaced with "This comment has been deleted by the author", and the system **completely erases the author's email and website URL (PII)** at the database level.
+4. **Anti-Brute Force**: A verification code is immediately invalidated upon a single incorrect attempt. A single email can request a maximum of 5 codes within 24 hours, with a mandatory 120-second cooldown between each request, fundamentally eliminating malicious spamming and brute-force attacks.

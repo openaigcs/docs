@@ -48,9 +48,14 @@ Once bound, AIGCS can automatically fetch and cache replies to the Mastodon stat
 | `autoFetch` | `false` | Automatically fetch new replies |
 | `cacheTtl` | — | Cache duration in minutes |
 
-When `autoFetch` is enabled, cached replies are served on page load; when disabled, every page view fetches live data.
+When `autoFetch` is enabled, cached replies are served on page load; when disabled, live data is fetched on every page visit.
 
-Fetched fediverse comments are injected into the widget alongside AI-generated comments.
+### Reverse Proxy & Graceful Fallback
+
+The core role of the Fediverse plugin is to act as a **reverse proxy**. It proxies the fetching of replies from the authorized Mastodon instance account via the AIGCS backend, and then displays them on the frontend Widget. This design effectively solves network connectivity issues for some visitors who cannot directly access certain Mastodon instances.
+
+Fetched Fediverse comments will be injected into the widget alongside AI-generated comments and native comments.
+**Please Note**: AIGCS features a highly decoupled design. If a network timeout or error occurs while fetching Fediverse data, the plugin will fail silently and gracefully degrade. This will **never** block or affect the normal display of AI comments or native visitor comments.
 
 ## Splitting Domain and Account
 

@@ -31,6 +31,13 @@ The dashboard shows:
 - **Total Comments** — generated AI comments
 - **Cached Pages** — pages with cached content
 
+### Notification Center
+The **bell icon** at the top right of the admin panel serves as a global Notification Center. It automatically polls the background every 30 seconds.
+You will receive real-time push notifications with an unread red dot for the following events:
+- Batch cache warming tasks (Success/Failure)
+- RSS feed comment import completion
+- New visitor submissions via the native plugin
+
 ## Site Management
 
 Each **Site** represents a website where AIGCS comments are embedded.
@@ -114,7 +121,7 @@ The cache system manages page content and AI comment generation.
 ### Operations
 
 - **Fetch & Generate** — fetch page content and generate comments
-- **Warm Cache** — batch generate for multiple pages
+- **Warm Cache** — batch generate for multiple pages. This process runs silently in the **background**. A generation report will be pushed to the site owner via the top "Notification Center" when finished.
 - **Clear Cache** — remove cached entries
 - **Restore** — recover deleted cache entries
 
@@ -157,6 +164,10 @@ Click **Export Comments** to download all visitor comments for the site as JSON.
 4. Results show: `{ imported, skipped, total }`
 
 Duplicate IDs are automatically skipped.
+
+### RSS Auto Import
+
+In addition to manual JSON imports, you can provide an RSS feed URL for a site. The system will **automatically parse articles from the RSS** and fetch data to build or synchronize the comment article structure for that site. Once fetched, the results will be reported to you via the **Notification Center**.
 
 ### Download Template
 

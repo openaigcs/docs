@@ -5,15 +5,17 @@ description: AIGCS system architecture overview
 
 ## Overview
 
-AIGCS is a monorepo with six packages under `packages/` and plugins under `packages/plugins/`:
+The current version of AIGCS (V1) is defined as a highly cohesive, standard Node.js Monorepo. It focuses primarily on stability within traditional server environments and local SQLite file databases. Although the structure reserves deployment compatibility for Edge Functions (e.g., Tencent Cloud EdgeOne) in the `packages/edgeone` directory for future development, a comprehensive **cloud-native (Serverless/Distributed) refactoring** has been deferred to the next major phase. Our current philosophy is "treating the present as a stable V1."
+
+AIGCS is a monorepo containing five core packages under `packages/` and plugins under `packages/plugins/`:
 
 ```
 packages/
 ├── core/         Shared types, Drizzle ORM schema, constants
-├── server/       Hono HTTP API server, middleware, AI providers
-├── admin/        React SPA admin panel (TanStack Router + Kumo UI)
-├── widget/       Web Component for displaying comments (Shadow DOM)
-└── edgeone/      EdgeOne Makers deployment bundle
+├── server/       Hono HTTP API server, middleware, notification service
+├── admin/        Modern React SPA admin panel built with TanStack Router + React Query
+├── widget/       Web Component for displaying comments (framework-agnostic Shadow DOM)
+└── edgeone/      Reserved build scripts for future cloud-native Edge Functions
 packages/plugins/
 ├── native/       Visitor comments plugin
 └── mastodon/     Fediverse/ActivityPub integration
