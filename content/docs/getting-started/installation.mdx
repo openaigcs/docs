@@ -5,7 +5,18 @@ description: Complete installation guide for all deployment options
 
 ## Docker Deployment (Recommended)
 
+Depending on your server network environment, you can choose from the following Docker registries:
+
+| Registry | Image Address | Description |
+|----------|---------------|-------------|
+| Docker Hub | `openaigcs/aigcs:latest` | Official default image |
+| GitHub GHCR | `ghcr.io/openaigcs/aigcs:latest` | GitHub Container Registry |
+| Aliyun (ACR) | `registry.cn-shanghai.aliyuncs.com/openaigcs/aigcs:latest` | East China 2 (Shanghai) node |
+| CNB Registry | `docker.cnb.cool/openaigcs/aigcs:latest` | Tencent CNB registry |
+
 ### Using Docker Run
+
+You can directly replace the image name in the command below with one of the mirrors above.
 
 ```bash
 docker run -d \
