@@ -12,6 +12,7 @@
     "guide/plugins",
     "guide/generation",
     "guide/email",
+    "guide/passkey-oauth",
     "---安全---",
     "security/index",
     "---插件---",
