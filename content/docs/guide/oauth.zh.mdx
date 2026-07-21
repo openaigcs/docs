@@ -1,0 +1,101 @@
+---
+title: 第三方快捷登录 (OAuth 2.0)
+description: 详细指导如何配置 GitHub 与 Google 第三方一键登录，包含控制台申请及环境变量配置。
+---
+
+AIGCS 支持使用 GitHub 和 Google 账号进行一键快捷登录与绑定。
+
+## 环境变量配置
+
+请在服务器的 `.env` 配置文件或系统环境变量中，配置以下参数：
+
+```bash
+# GitHub OAuth 配置
+GITHUB_CLIENT_ID=您的_github_client_id
+GITHUB_CLIENT_SECRET=您的_github_client_secret
+
+# Google OAuth 配置
+GOOGLE_CLIENT_ID=您的_google_client_id
+GOOGLE_CLIENT_SECRET=您的_google_client_secret
+
+# 可选: 强制指定回调的主机域名 (在反向代理下非常有用)
+RP_ORIGIN=https://您的后台域名.com
+```
+
+---
+
+## 详细教程：申请 GitHub OAuth App
+
+申请 GitHub 第三方登录凭证需要以下步骤：
+
+### 第一步：进入 GitHub 开发者中心
+1. 登录您的 [GitHub 账号](https://github.com/)。
+2. 点击右上角您的头像，选择 **Settings**（设置）。
+3. 在左侧边栏最下方，点击 **Developer Settings**（开发者设置）。
+4. 在左侧菜单中，选择 **OAuth Apps**。
+
+### 第二步：注册新应用
+1. 点击右上角的 **New OAuth App**（新建 OAuth 应用）按钮。
+2. 填写应用申请信息：
+   * **Application name**：填写您的应用名称，例如 `AIGCS`。
+   * **Homepage URL**：您的 AIGCS 管理面板主页地址，例如 `https://aigcs.example.com`。
+   * **Application description**：应用描述（可选，可不填）。
+   * **Authorization callback URL**（最为关键）：填写您的 AIGCS 授权回调接口：
+     ```text
+     https://您的后台域名.com/api/auth/oauth/github/callback
+     ```
+     *(注：如果您是在本地开发调试，可填写 `http://localhost:41905/api/auth/oauth/github/callback`)*。
+3. 检查无误后，点击底部的 **Register application**（注册应用）。
+
+### 第三步：获取 Client ID 和 Client Secret
+1. 注册成功后，页面上会显示您的 **Client ID**，复制它并填入环境变量中的 `GITHUB_CLIENT_ID`。
+2. 点击 **Generate a new client secret**（生成新的客户端密钥）按钮。
+3. 页面会显示一串长字符（**Client Secret**）。**注意：这串字符只显示一次，离开页面后将无法查看**。请立即复制并填入环境变量中的 `GITHUB_CLIENT_SECRET`。
+
+---
+
+## 详细教程：申请 Google OAuth 凭证
+
+申请 Google 第三方登录凭证需要以下步骤：
+
+### 第一步：登录 Google Cloud 控制台
+1. 访问并登录 [Google Cloud Console](https://console.cloud.google.com/)。
+2. 在页面顶部选择或新建一个项目（Project）。
+
+### 第二步：配置 OAuth 同意屏幕 (OAuth Consent Screen)
+首次创建凭据之前，您必须配置同意屏幕：
+1. 点击左上角导航菜单，选择 **APIs & Services** -> **OAuth consent screen**。
+2. **User Type** 选择 **External**（外部），然后点击 **Create**。
+3. 填写基本应用信息：
+   * **App name**：应用名称（例如 `AIGCS`）。
+   * **User support email**：您的邮箱地址。
+   * **Developer contact information**：填写开发者邮箱地址。
+4. 点击 **Save and Continue**，接下来的 "Scopes" 和 "Test Users" 均保留默认配置，直接点击保存，直到返回仪表盘。
+
+### 第三步：创建 OAuth 客户端 ID 凭据
+1. 在左侧菜单中选择 **Credentials**（凭据）。
+2. 点击页面顶部的 **+ Create Credentials** 按钮，在下拉菜单中选择 **OAuth client ID**。
+3. 填写凭据参数：
+   * **Application type**：选择 **Web application**（Web 应用程序）。
+   * **Name**：自定义一个名字（例如 `AIGCS Credentials`）。
+   * **Authorized redirect URIs**（已授权的重定向 URI，最为关键）：
+     * 点击 **ADD URI**。
+     * 输入您的 Google OAuth 回调地址：
+       ```text
+       https://您的后台域名.com/api/auth/oauth/google/callback
+       ```
+       *(注：如果您是在本地开发调试，可填写 `http://localhost:41905/api/auth/oauth/google/callback`)*。
+4. 点击底部的 **Create** 按钮。
+
+### 第四步：获取凭证密钥
+1. 创建成功后会弹出 **OAuth client created** 提示框。
+2. 复制并保存框中的 **Your Client ID**（填入 `GOOGLE_CLIENT_ID`）和 **Your Client Secret**（填入 `GOOGLE_CLIENT_SECRET`）。
+
+---
+
+## 关闭注册时的安全行为
+
+如果您在后台“系统设置”中关闭了用户注册（即 `registrationOpen: false`）：
+- **已绑定账号**：已绑定的第三方社交账号仍可畅通无阻地快捷登录。
+- **同邮箱安全自绑定**：如果登录的 Google/GitHub 账户主要邮箱与您系统内已有的本地管理员邮箱完全吻合，系统会自动帮您追加关联绑定，确保您能通过该第三方账号正常访问。
+- **陌生账号拦截**：系统内不存在此关联邮箱的陌生外部账号尝试快捷登录时，系统将**直接阻止自动创建账号**，终止登录过程，并重定向回登录页显示温和的红字错误：*“系统已关闭注册，请联系管理员为您创建账号后再行绑定第三方账户。”*

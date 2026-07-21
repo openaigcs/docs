@@ -1,0 +1,97 @@
+---
+title: Third-party Social Logins (OAuth 2.0)
+description: Step-by-step guide to configure GitHub and Google OAuth sign-in options, including console registration and environment variables setup.
+---
+
+AIGCS supports fast, secure one-click social logins via GitHub and Google.
+
+## Environment Variables
+
+Configure the following environment variables in your server configuration or `.env` file to enable social logins:
+
+```bash
+# GitHub OAuth Configuration
+GITHUB_CLIENT_ID=your_github_client_id
+GITHUB_CLIENT_SECRET=your_github_client_secret
+
+# Google OAuth Configuration
+GOOGLE_CLIENT_ID=your_google_client_id
+GOOGLE_CLIENT_SECRET=your_google_client_secret
+
+# Optional: Force the redirect base URL (useful behind reverse proxies)
+RP_ORIGIN=https://your-admin-domain.com
+```
+
+---
+
+## Detailed Step: Create a GitHub OAuth App
+
+Follow these instructions to acquire credentials from GitHub:
+
+### Step 1: Open Developer Settings
+1. Sign in to your [GitHub Account](https://github.com/).
+2. Click your profile avatar in the upper-right corner and select **Settings**.
+3. On the left sidebar, scroll to the bottom and click **Developer Settings**.
+4. In the left-hand menu, select **OAuth Apps**.
+
+### Step 2: Register the Application
+1. Click the **New OAuth App** button in the top right.
+2. Fill out the application details:
+   * **Application name**: E.g., `AIGCS`.
+   * **Homepage URL**: Your AIGCS administrator domain, e.g., `https://aigcs.example.com`.
+   * **Authorization callback URL** (Crucial): Enter the callback endpoint:
+     ```text
+     https://your-admin-domain.com/api/auth/oauth/github/callback
+     ```
+     *(Note: For local testing, use `http://localhost:41905/api/auth/oauth/github/callback`)*.
+3. Click **Register application**.
+
+### Step 3: Extract Keys
+1. Copy the displayed **Client ID** and save it as `GITHUB_CLIENT_ID` in your env.
+2. Click the **Generate a new client secret** button.
+3. Copy the generated **Client Secret**. **Warning: This key is only shown once**. Save it as `GITHUB_CLIENT_SECRET` immediately.
+
+---
+
+## Detailed Step: Create Google OAuth Credentials
+
+Follow these instructions to acquire credentials from Google Cloud Platform:
+
+### Step 1: Navigate to GCP Console
+1. Open and sign in to the [Google Cloud Console](https://console.cloud.google.com/).
+2. Select or create a project at the top of the window.
+
+### Step 2: Set Up OAuth Consent Screen
+If this is your first time creating credentials, configure the consent screen:
+1. Open the left navigation menu, go to **APIs & Services** -> **OAuth consent screen**.
+2. Select **External** as the User Type and click **Create**.
+3. Fill out the required basic information (App name, User support email, Developer contact email) and click **Save and Continue**.
+4. Skip the Scopes and Test Users sections by clicking **Save and Continue** until you return to the dashboard.
+
+### Step 3: Create Web Client ID
+1. Select **Credentials** from the left menu.
+2. Click **+ Create Credentials** at the top of the page, then select **OAuth client ID**.
+3. Enter the following parameters:
+   * **Application type**: Select **Web application**.
+   * **Name**: E.g., `AIGCS Web Client`.
+   * **Authorized redirect URIs** (Crucial):
+     * Click **ADD URI**.
+     * Enter the exact redirect URI:
+       ```text
+       https://your-admin-domain.com/api/auth/oauth/google/callback
+       ```
+       *(Note: For local testing, use `http://localhost:41905/api/auth/oauth/google/callback`)*.
+4. Click **Create** at the bottom.
+
+### Step 4: Extract Keys
+1. A popup window displaying **OAuth client created** will appear.
+2. Copy **Your Client ID** (for `GOOGLE_CLIENT_ID`) and **Your Client Secret** (for `GOOGLE_CLIENT_SECRET`).
+
+---
+
+## Security Handling when Registration is Closed
+
+If public registration is turned off (`registrationOpen: false` in System Settings):
+- **Linked Accounts**: Previously bound Google/GitHub accounts will continue to sign in normally.
+- **Auto-binding**: If an unlinked social login attempts to authenticate, and its primary email matches an existing local administrator account, AIGCS will automatically link them to protect access.
+- **Strangers Blocked**: Unrecognized accounts with no local profile or prior binding will be **blocked** from registering, and redirected to the login page with the warning: *"Registration is closed. Please ask the administrator to create your account first, then bind it."*
