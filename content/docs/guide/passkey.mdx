@@ -1,13 +1,13 @@
 ---
-title: Passkeys (WebAuthn)
+title: Passkey (WebAuthn)
 description: Configure passwordless Passkey (WebAuthn) authentication for your AIGCS dashboard.
 ---
 
-Passkeys allow you to securely sign in using biometric authentication (e.g., Apple Touch ID / Face ID, Windows Hello, Android Fingerprint) or password managers (e.g., Bitwarden, 1Password).
+Passkey allows you to securely sign in using biometric authentication (e.g., Apple Touch ID / Face ID, Windows Hello, Android Fingerprint) or password managers (e.g., Bitwarden, 1Password).
 
 ## Prerequisites
 
-- Passkeys require a secure context. They will **only work** over `HTTPS` or on `localhost` during local development.
+- Passkey requires a secure context. It will **only work** over `HTTPS` or on `localhost` during local development.
 - No external environment variables or server-side configuration are required.
 
 ## How to Set Up
@@ -29,7 +29,7 @@ Passkeys allow you to securely sign in using biometric authentication (e.g., App
 1. Follow your browser's prompt to verify your biometric identity or configure your password manager.
 2. Once verified, the passkey will appear in your registered keys list. You can now use it on the login page by clicking **Login with Passkey**.
 
-## Managing Passkeys
+## Managing Passkey
 
 You can register multiple passkeys for different devices (e.g., one on your phone, one on your laptop, and a hardware key as backup).
 
