@@ -64,3 +64,18 @@ pnpm lint
 # TypeScript type checking
 pnpm typecheck
 ```
+
+## pnpm Upgrade Standard
+
+To keep local development versions consistent with build runs inside the Docker container, AIGCS uses `corepack` to lock the pnpm package manager version. When upgrading pnpm, follow these standard steps:
+
+1. **Update package.json**: Open the root `package.json` file and modify the `"packageManager"` field to your target pnpm version (e.g., `"pnpm@11.15.1"`).
+2. **Activate Version**: Run the corepack command in the root folder to download, activate, and update the locked binaries:
+   ```bash
+   corepack use pnpm@11.15.1
+   ```
+3. **Synchronize Lockfile**: Run `pnpm install` to update `pnpm-lock.yaml`:
+   ```bash
+   pnpm install
+   ```
+4. **Build & Verify**: Run `pnpm build` to confirm everything builds successfully under the new pnpm release before committing `package.json` and `pnpm-lock.yaml`.
